@@ -89,3 +89,19 @@
 10. 제어 흐름 & 복잡도
     * 중첩 `depth`는 `2`이하, `early return`
       * 불필요한 `else`는 제거하기
+---
+
+### 🏛️ 프로젝트 구조
+```java
+com.selfbell
+	member // entity 기준으로 패키지 분리
+	- controller
+	- service
+	- dto
+	- entity
+	- repository
+	- exception
+global
+	- config
+	- exception
+```
