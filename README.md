@@ -50,3 +50,42 @@
    ```
 * 새 기능 구현 시 항상 최신 dev 기준으로 새 브랜치를 파서 충돌 최소화.
 ---
+
+### 🖥️ 코드 컨벤션
+> 운영 언어: Java17  
+> 빌드 도구: Gradle  
+> 프레임워크: Spring Boot 3.x
+
+1. 네이밍
+   * 주로 `camelCase`
+   * `Boolean` 메서드는 `is/has/can` 패턴 사용—예: `isActive()`, `hasRole()`.
+2. 형식
+    * 들여쓰기: `4 spaces` = `tap`
+    * 행 길이: `120`자 제한
+    * 주석: `//`→ 짧은 설명, `/* … */`→ 블록
+3. 메서드, 매개변수
+    * CRUD 접두어: `create, retrieve, update, delete`
+4. 엔티티
+    * `@Table(name = "users")`등 명시적 테이블명 지정. 예약어는 복수형으로 회피(`order` → `orders`).
+    * `@Column(nullable = false)`를 필수 필드에만 기재
+    * 시간 컬럼은 Spring Data Auditing
+      ```java
+      @CreatedDate private LocalDateTime createdAt;
+      @LastModifiedDate private LocalDateTime updatedAt;
+      ```
+5. DTO & 매핑
+   * DTO는 기본 `class`로 (`record` x)
+   * 변환 책임을 DTO로 위임할 것
+   * DTO 네이밍: `UserCreateRequest`, `UserSummaryResponse`, `PaymentClientResponse` -dto 금지
+6. Validation
+   * Controller 단에서 `@Valid` 활용
+7. 메서드 순서
+   * `public` 맨 뒤 `private` 메서드 넣을 것
+8. 어노테이션 정렬
+   * 스프링 핵심(`@Service`, `@Configuration`)
+   * 트랜잭션 보안
+   * 검증/로그
+   * Lombok (`@Getter`, `@Builder`) - 가장 하단
+10. 제어 흐름 & 복잡도
+    * 중첩 `depth`는 `2`이하, `early return`
+      * 불필요한 `else`는 제거하기
