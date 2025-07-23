@@ -30,9 +30,9 @@
     $ git checkout -b feat/#<이슈 번호>-<간단 설명>
     
     # 3️⃣ 작업 & 단위 커밋
-    $ git commit -m "feat(auth): kakao oauth callback (#<이슈 번호>)"
+    $ git commit -m "feat: kakao oauth callback (#<이슈 번호>)"
    ```
-* 커밋 규칙: `type(scope): subject`
+* 커밋 규칙: `type: subject`
     * `feat`|`fix`|`docs`|`refactor`|`test`|`chore`|`rename`
 
 4. PR 작성 및 리뷰 규칙
@@ -92,7 +92,7 @@
 ---
 
 ### 🏛️ 프로젝트 구조
-```java
+```text
 com.selfbell
 	member // entity 기준으로 패키지 분리
 	- controller
