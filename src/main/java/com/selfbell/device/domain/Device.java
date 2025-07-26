@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "devices")
 @Getter
@@ -26,9 +25,8 @@ public class Device {
     @Column(nullable = false)
     private String deviceToken; //fcm_token
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private DeviceType deviceType;
-
-    private LocalDateTime createdAt;
+    private DeviceType deviceType = DeviceType.ANDROID; //platform
 }

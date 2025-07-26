@@ -22,22 +22,27 @@ public class Alert {
 
     private String message;
 
-    private LocalDateTime sentAt;
-
     @Builder.Default
     @Min(100)
     @Max(1000)
-    @Column(nullable = false, columnDefinition = "int default 500") //기본 500
-    private int radiusM = 500; // 알림 반경 (100 ~ 1000m)
+    @Column(nullable = false, columnDefinition = "int default 500")
+    private int radiusM = 500;
 
-    @Column(nullable = false, precision = 10, scale = 7)
-    private double latitude; //위도
-
-    @Column(nullable = false, precision = 10, scale = 7)
-    private Double longitude; //경도
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "TINYINT(1) default 0")
+    private Boolean isViewed = false;
 
     @Column(nullable = false)
-    private Boolean isViewed; // 확인 여부
+    private LocalDateTime triggeredAt;
+
+    @Column(nullable = false)
+    private LocalDateTime sendAt;
+
+    @Column(nullable = false, precision = 10, scale = 7)
+    private double latitude;
+
+    @Column(nullable = false, precision = 10, scale = 7)
+    private Double longitude;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id", nullable = false)
