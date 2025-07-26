@@ -1,5 +1,6 @@
 package com.selfbell.device.domain;
 
+import com.selfbell.device.domain.enums.DeviceType;
 import com.selfbell.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +10,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "devices")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -26,8 +26,9 @@ public class Device {
     @Column(nullable = false)
     private String deviceToken; //fcm_token
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String deviceType; //platform
+    private DeviceType deviceType;
 
     private LocalDateTime createdAt;
 }

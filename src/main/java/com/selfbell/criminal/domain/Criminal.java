@@ -9,7 +9,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -30,7 +29,4 @@ public class Criminal {
 
     @Column(nullable = false, length = 100)
     private String crimeType;
-
-    @OneToMany(mappedBy = "criminal", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Alert> alerts = new ArrayList<>();
 }
