@@ -105,3 +105,6 @@ global
 	- config
 	- exception
 ```
+
+### ⬇️ ERD
+<img width="1131" height="572" alt="image" src="https://github.com/user-attachments/assets/348cda54-e11c-4baa-b4ab-4d5b1c918c8f" />
