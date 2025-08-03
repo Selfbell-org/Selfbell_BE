@@ -38,9 +38,9 @@ public class EmergencyBellService {
         EmergencyBellXmlDto dto = xmlMapper.readValue(xmlResponse, EmergencyBellXmlDto.class);
 
         if (dto.getBody() == null) {
-            System.err.println("⚠️ 파싱은 되었지만 body가 null 입니다.");
+            System.err.println("파싱은 되었지만 body가 null 입니다.");
         } else {
-            System.out.println("✅ 데이터 개수: " + dto.getBody().getTotalCount());
+            System.out.println("데이터 개수: " + dto.getBody().getTotalCount());
         }
 
         return dto;
