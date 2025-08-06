@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -39,10 +40,10 @@ public class Alert {
     private LocalDateTime sendAt;
 
     @Column(nullable = false, precision = 10, scale = 7)
-    private double latitude;
+    private BigDecimal latitude;
 
     @Column(nullable = false, precision = 10, scale = 7)
-    private Double longitude;
+    private BigDecimal longitude;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id", nullable = false)

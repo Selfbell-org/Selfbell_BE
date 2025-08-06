@@ -1,9 +1,7 @@
 package com.selfbell.user.service;
 
-import com.selfbell.auth.service.CertificationService;
 import com.selfbell.device.domain.Device;
 import com.selfbell.device.repository.DeviceRepository;
-import com.selfbell.global.exception.UnauthorizedException;
 import com.selfbell.user.domain.User;
 import com.selfbell.user.dto.UserSignUpRequestDTO;
 import com.selfbell.user.repository.UserRepository;
@@ -19,11 +17,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CertificationService certificationService;
 
     @Transactional
     public User createUser(UserSignUpRequestDTO request) {
-        validateCertifiedPhoneNumber(request.getPhoneNumber());
         validateDuplicatePhoneNumber(request.getPhoneNumber());
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());
@@ -38,12 +34,6 @@ public class UserService {
         deviceRepository.save(device);
 
         return user;
-    }
-
-    private void validateCertifiedPhoneNumber(String phoneNumber) {
-        if (!certificationService.isCertified(phoneNumber)) {
-            throw new UnauthorizedException("인증되지 않은 전화번호입니다.");
-        }
     }
 
     private void validateDuplicatePhoneNumber(String phoneNumber) {
