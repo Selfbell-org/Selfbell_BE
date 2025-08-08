@@ -6,8 +6,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.*;
-import org.springframework.data.geo.Point;
 
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -22,7 +23,7 @@ public class Place {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -32,8 +33,11 @@ public class Place {
     @Column(name = "address", nullable = false, length = 100)
     private String address;
 
-    @Column(nullable = false, columnDefinition = "geometry(Point, 4326)")
-    private Point location;  // 위치 정보 (위도/경도 통합)
+    @Column(nullable = false)
+    private BigDecimal latitude; // 위도
+
+    @Column(nullable = false)
+    private BigDecimal longitude; // 경도
 
     @Builder.Default
     @Min(100)
