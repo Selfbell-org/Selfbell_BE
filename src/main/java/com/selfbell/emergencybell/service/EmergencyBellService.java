@@ -12,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -108,6 +111,27 @@ public class EmergencyBellService {
         }
 
         log.info("전체 데이터 Upsert 완료. 처리 건수: {}", items.size());
+    }
+
+    public List<Map<String, Object>> getFilteredEmergencyBellData(int pageNo, int numOfRows) throws Exception {
+        EmergencyBellXmlDto dto = getEmergencyBellData(pageNo, numOfRows);
+
+        List<EmergencyBellXmlDto.Item> items = dto.getBody().getItems().getItem();
+
+        // 필요한 필드만 Map으로 추출
+        return items.stream().map(item -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("latitude", item.getLAT()); //위도
+            map.put("longitude", item.getLON()); //경도
+            map.put("ins_DETAIL", item.getINS_DETAIL()); //ex)인왕산도시자연공원(청운지구 서시정)
+            map.put("address", item.getADRES()); //주소 ex)서울특별시 종로구 청운동 7-3
+            map.put("ins_type", item.getINS_TYPE()); // ex) 화장실
+            map.put("objt_ID", item.getOBJT_ID()); //ID 값
+            map.put("x", item.getX()); //x좌표
+            map.put("y", item.getY()); //y좌표
+            map.put("tel", item.getMNG_TEL()); //전화번호
+            return map;
+        }).collect(Collectors.toList());
     }
 
     // 반경 내 안심벨 조회 메서드
