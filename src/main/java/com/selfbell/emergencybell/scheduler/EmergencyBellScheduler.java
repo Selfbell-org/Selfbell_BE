@@ -13,10 +13,9 @@ public class EmergencyBellScheduler {
 
     private final EmergencyBellService emergencyBellService;
 
-    @Scheduled(cron = "0 0 0 * * *") // 매일 자정 0시 0분 0초 실행
-    public void updateEmergencyBellData() {
+    @Scheduled(cron = "0 0 0 * * *") // 자정마다 api 호출 후 db 업데이트
+    public void updateEmergencyBellData() { //upsert 구현
         try {
-            // 1페이지에 100개씩 가져와서 저장 (필요시 조절 가능)
             var dto = emergencyBellService.getEmergencyBellData(1, 100);
             emergencyBellService.saveOrUpdateEmergencyBells(dto.getBody().getItems().getItem());
 

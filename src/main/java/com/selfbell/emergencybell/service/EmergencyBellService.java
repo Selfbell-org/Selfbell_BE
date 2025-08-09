@@ -3,6 +3,7 @@ package com.selfbell.emergencybell.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.selfbell.emergencybell.domain.EmergencyBell;
+import com.selfbell.emergencybell.dto.EmergencyBellSummaryDto;
 import com.selfbell.emergencybell.dto.EmergencyBellXmlDto;
 import com.selfbell.emergencybell.repository.EmergencyBellRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -71,6 +70,10 @@ public class EmergencyBellService {
 
         for (EmergencyBellXmlDto.Item item : items) {
             Long id = item.getOBJT_ID();
+            if (id == null) {
+                log.warn("Item에 OBJT_ID가 없어 건너뜁니다.");
+                continue;
+            }
 
             EmergencyBell entity = repository.findById(id).orElse(
                     EmergencyBell.builder()
@@ -78,64 +81,75 @@ public class EmergencyBellService {
                             .build()
             );
 
-            // 각 필드별 업데이트 메서드 호출
-            entity.updateFacilityType(item.getFCLTY_TY());
-            entity.updateManagingInstitution(item.getMNG_INST());
-            entity.updateInstallPurpose(item.getINS_PURPOS());
-            entity.updateInstallType(item.getINS_TYPE());
-            entity.updateInstallDetail(item.getINS_DETAIL());
-            entity.updateRoadAddress(item.getRN_ADRES());
-            entity.updateLotNumberAddress(item.getADRES());
-            entity.updateLatitude(item.getLAT());
-            entity.updateLongitude(item.getLON());
-            entity.updateLinkType(item.getLNK_TYPE());
-            entity.updatePoliceLinked(item.getFLAG_POL_L());
-            entity.updateSecurityLinked(item.getFLAG_SEC_L());
-            entity.updateManagementLinked(item.getFLAG_MNG_L());
-            entity.updateAddition(item.getADDITION());
-            entity.updateInstallYear(item.getINS_YEAR() != null ? item.getINS_YEAR().intValue() : null);
-            entity.updateLastInspectionResult(item.getLAST_INSPT());
-            entity.updateManagementPhone(item.getMNG_TEL());
-            entity.updateServiceLinked(item.getFLAG_SERVI());
-            entity.updateProvinceCode(item.getCTPRVN_CD() != null ? item.getCTPRVN_CD().intValue() : null);
-            entity.updateDistrictCode(item.getSGG_CD() != null ? item.getSGG_CD().intValue() : null);
-            entity.updateTownshipCode(item.getEMD_CD() != null ? item.getEMD_CD().intValue() : null);
-            entity.updateCoordX(item.getX());
-            entity.updateCoordY(item.getY());
-            entity.updateDataType(item.getDATA_TY() != null ? item.getDATA_TY().intValue() : null);
-
-            entity.updateLastInspectionDateFromString(item.getLAST_INSPD());
+            // 오직 9개 필드만 업데이트
+            entity.updateFromItem(
+                    id,
+                    item.getLAT(),
+                    item.getLON(),
+                    item.getINS_DETAIL(),
+                    item.getMNG_TEL(),
+                    item.getADRES(),
+                    item.getINS_TYPE(),
+                    item.getX(),
+                    item.getY()
+            );
 
             repository.save(entity);
-            log.debug("Upsert 완료: ID = {}", id);
+            log.debug("Upsert(요약) 완료: ID = {}", id);
         }
 
-        log.info("전체 데이터 Upsert 완료. 처리 건수: {}", items.size());
+        log.info("전체 데이터 Upsert(요약 9개 필드) 완료. 처리 건수: {}", items.size());
     }
 
-    public List<Map<String, Object>> getFilteredEmergencyBellData(int pageNo, int numOfRows) throws Exception {
+    public List<EmergencyBellSummaryDto> getFilteredEmergencyBellData(int pageNo, int numOfRows) throws Exception {
         EmergencyBellXmlDto dto = getEmergencyBellData(pageNo, numOfRows);
 
-        List<EmergencyBellXmlDto.Item> items = dto.getBody().getItems().getItem();
+        var items = dto.getBody().getItems().getItem();
 
-        // 필요한 필드만 Map으로 추출
-        return items.stream().map(item -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("latitude", item.getLAT()); //위도
-            map.put("longitude", item.getLON()); //경도
-            map.put("ins_DETAIL", item.getINS_DETAIL()); //ex)인왕산도시자연공원(청운지구 서시정)
-            map.put("address", item.getADRES()); //주소 ex)서울특별시 종로구 청운동 7-3
-            map.put("ins_type", item.getINS_TYPE()); // ex) 화장실
-            map.put("objt_ID", item.getOBJT_ID()); //ID 값
-            map.put("x", item.getX()); //x좌표
-            map.put("y", item.getY()); //y좌표
-            map.put("tel", item.getMNG_TEL()); //전화번호
-            return map;
-        }).collect(Collectors.toList());
+        return items.stream()
+                .filter(i -> i.getOBJT_ID() != null)
+                .map(item -> EmergencyBellSummaryDto.builder()
+                        .lon(item.getLON())
+                        .lat(item.getLAT())
+                        .insDetail(item.getINS_DETAIL())
+                        .objtId(item.getOBJT_ID())
+                        .mngTel(item.getMNG_TEL())
+                        .adres(item.getADRES())
+                        .insType(item.getINS_TYPE())
+                        .x(item.getX())
+                        .y(item.getY())
+                        .build())
+                .collect(Collectors.toList());
     }
 
-    // 반경 내 안심벨 조회 메서드
-    public List<EmergencyBell> findNearbyEmergencyBells(double userLat, double userLon, double radiusInMeters) {
-        return repository.findWithinRadius(userLat, userLon, radiusInMeters);
+    public List<EmergencyBellSummaryDto> findNearbyEmergencyBells(double userLat, double userLon, double radiusInMeters) {
+        var raw = repository.findWithinRadiusRaw(userLat, userLon, radiusInMeters);
+
+        return raw.stream().map(row -> {
+            // row 순서: 0:id,1:latitude,2:longitude,3:install_detail,4:management_phone,5:lot_number_address,6:install_type,7:coord_x,8:coord_y,9:distance
+            Long id = row[0] != null ? ((Number) row[0]).longValue() : null;
+            Double latitude = row[1] != null ? ((Number) row[1]).doubleValue() : null;
+            Double longitude = row[2] != null ? ((Number) row[2]).doubleValue() : null;
+            String installDetail = row[3] != null ? row[3].toString() : null;
+            String managementPhone = row[4] != null ? row[4].toString() : null;
+            String lotNumberAddress = row[5] != null ? row[5].toString() : null;
+            String installType = row[6] != null ? row[6].toString() : null;
+            Double coordX = row[7] != null ? ((Number) row[7]).doubleValue() : null;
+            Double coordY = row[8] != null ? ((Number) row[8]).doubleValue() : null;
+            Double distance = row[9] != null ? ((Number) row[9]).doubleValue() : null;
+
+            return EmergencyBellSummaryDto.builder()
+                    .objtId(id)
+                    .lat(latitude)
+                    .lon(longitude)
+                    .insDetail(installDetail)
+                    .mngTel(managementPhone)
+                    .adres(lotNumberAddress)
+                    .insType(installType)
+                    .x(coordX)
+                    .y(coordY)
+                    .distance(distance)
+                    .build();
+        }).collect(Collectors.toList());
     }
 }
