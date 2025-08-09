@@ -103,6 +103,10 @@ public class EmergencyBellService {
 
         log.info("전체 데이터 저장 완료. 저장 건수: {}", items.size());
     }
+
+    public List<EmergencyBell> findNearbyEmergencyBells(double userLat, double userLon, double radiusInMeters) {
+        return repository.findWithinRadius(userLat, userLon, radiusInMeters);
+    } //db에서 해당 반경 내 위치들을 반환
 }
 
 
