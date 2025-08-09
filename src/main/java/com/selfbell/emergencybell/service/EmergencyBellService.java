@@ -6,6 +6,7 @@ import com.selfbell.emergencybell.domain.EmergencyBell;
 import com.selfbell.emergencybell.dto.EmergencyBellXmlDto;
 import com.selfbell.emergencybell.repository.EmergencyBellRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmergencyBellService {
@@ -29,6 +31,8 @@ public class EmergencyBellService {
                 "&pageNo=" + pageNo +
                 "&numOfRows=" + numOfRows;
 
+        log.info("API 호출 URL: {}", url);
+
         String xmlResponse = restTemplate.getForObject(url, String.class);
 
         if (xmlResponse == null || xmlResponse.trim().isEmpty()) {
@@ -41,9 +45,9 @@ public class EmergencyBellService {
         EmergencyBellXmlDto dto = xmlMapper.readValue(xmlResponse, EmergencyBellXmlDto.class);
 
         if (dto.getBody() == null) {
-            System.err.println("파싱은 되었지만 body가 null 입니다.");
+            log.error("파싱은 되었지만 body가 null 입니다.");
         } else {
-            System.out.println("데이터 개수: " + dto.getBody().getTotalCount());
+            log.info("데이터 개수: {}", dto.getBody().getTotalCount());
         }
 
         return dto;
@@ -58,6 +62,7 @@ public class EmergencyBellService {
     @Transactional
     public void saveOrUpdateEmergencyBells(List<EmergencyBellXmlDto.Item> items) {
         if (items == null) {
+            log.warn("저장할 데이터가 없습니다.");
             return;
         }
 
@@ -90,11 +95,14 @@ public class EmergencyBellService {
                     .dataType(item.getDATA_TY() != null ? item.getDATA_TY().intValue() : null)
                     .build();
 
-            // LAST_INSPD String → LocalDate 변환 메서드 호출
             entity.setLastInspectionDateFromString(item.getLAST_INSPD());
 
             repository.save(entity);
+            log.debug("저장 완료: ID = {}", item.getOBJT_ID());
         }
+
+        log.info("전체 데이터 저장 완료. 저장 건수: {}", items.size());
     }
 }
+
 
