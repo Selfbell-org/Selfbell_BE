@@ -2,11 +2,13 @@ package com.selfbell.emergencybell.scheduler;
 
 import com.selfbell.emergencybell.service.EmergencyBellService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class EmergencyBellScheduler {
 
     private final EmergencyBellService emergencyBellService;
@@ -18,10 +20,9 @@ public class EmergencyBellScheduler {
             var dto = emergencyBellService.getEmergencyBellData(1, 100);
             emergencyBellService.saveOrUpdateEmergencyBells(dto.getBody().getItems().getItem());
 
-            System.out.println("안심벨 데이터 DB 자동 업데이트 완료 - " + java.time.LocalDateTime.now());
+            log.info("안심벨 데이터 DB 자동 업데이트 완료 - {}", java.time.LocalDateTime.now());
         } catch (Exception e) {
-            System.err.println("안심벨 데이터 업데이트 중 에러 발생: " + e.getMessage());
-            e.printStackTrace();
+            log.error("안심벨 데이터 업데이트 중 에러 발생: {}", e.getMessage(), e);
         }
     }
 }
