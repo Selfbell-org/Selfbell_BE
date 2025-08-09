@@ -61,52 +61,57 @@ public class EmergencyBellService {
 
     @Transactional
     public void saveOrUpdateEmergencyBells(List<EmergencyBellXmlDto.Item> items) {
-        if (items == null) {
+        if (items == null || items.isEmpty()) {
             log.warn("저장할 데이터가 없습니다.");
             return;
         }
 
         for (EmergencyBellXmlDto.Item item : items) {
-            EmergencyBell entity = EmergencyBell.builder()
-                    .id(item.getOBJT_ID())
-                    .facilityType(item.getFCLTY_TY())
-                    .managingInstitution(item.getMNG_INST())
-                    .installPurpose(item.getINS_PURPOS())
-                    .installType(item.getINS_TYPE())
-                    .installDetail(item.getINS_DETAIL())
-                    .roadAddress(item.getRN_ADRES())
-                    .lotNumberAddress(item.getADRES())
-                    .latitude(item.getLAT())
-                    .longitude(item.getLON())
-                    .linkType(item.getLNK_TYPE())
-                    .policeLinked(item.getFLAG_POL_L())
-                    .securityLinked(item.getFLAG_SEC_L())
-                    .managementLinked(item.getFLAG_MNG_L())
-                    .addition(item.getADDITION())
-                    .installYear(item.getINS_YEAR() != null ? item.getINS_YEAR().intValue() : null)
-                    .lastInspectionResult(item.getLAST_INSPT())
-                    .managementPhone(item.getMNG_TEL())
-                    .serviceLinked(item.getFLAG_SERVI())
-                    .provinceCode(item.getCTPRVN_CD() != null ? item.getCTPRVN_CD().intValue() : null)
-                    .districtCode(item.getSGG_CD() != null ? item.getSGG_CD().intValue() : null)
-                    .townshipCode(item.getEMD_CD() != null ? item.getEMD_CD().intValue() : null)
-                    .coordX(item.getX())
-                    .coordY(item.getY())
-                    .dataType(item.getDATA_TY() != null ? item.getDATA_TY().intValue() : null)
-                    .build();
+            Long id = item.getOBJT_ID();
 
-            entity.setLastInspectionDateFromString(item.getLAST_INSPD());
+            EmergencyBell entity = repository.findById(id).orElse(
+                    EmergencyBell.builder()
+                            .id(id)
+                            .build()
+            );
+
+            // 각 필드별 업데이트 메서드 호출
+            entity.updateFacilityType(item.getFCLTY_TY());
+            entity.updateManagingInstitution(item.getMNG_INST());
+            entity.updateInstallPurpose(item.getINS_PURPOS());
+            entity.updateInstallType(item.getINS_TYPE());
+            entity.updateInstallDetail(item.getINS_DETAIL());
+            entity.updateRoadAddress(item.getRN_ADRES());
+            entity.updateLotNumberAddress(item.getADRES());
+            entity.updateLatitude(item.getLAT());
+            entity.updateLongitude(item.getLON());
+            entity.updateLinkType(item.getLNK_TYPE());
+            entity.updatePoliceLinked(item.getFLAG_POL_L());
+            entity.updateSecurityLinked(item.getFLAG_SEC_L());
+            entity.updateManagementLinked(item.getFLAG_MNG_L());
+            entity.updateAddition(item.getADDITION());
+            entity.updateInstallYear(item.getINS_YEAR() != null ? item.getINS_YEAR().intValue() : null);
+            entity.updateLastInspectionResult(item.getLAST_INSPT());
+            entity.updateManagementPhone(item.getMNG_TEL());
+            entity.updateServiceLinked(item.getFLAG_SERVI());
+            entity.updateProvinceCode(item.getCTPRVN_CD() != null ? item.getCTPRVN_CD().intValue() : null);
+            entity.updateDistrictCode(item.getSGG_CD() != null ? item.getSGG_CD().intValue() : null);
+            entity.updateTownshipCode(item.getEMD_CD() != null ? item.getEMD_CD().intValue() : null);
+            entity.updateCoordX(item.getX());
+            entity.updateCoordY(item.getY());
+            entity.updateDataType(item.getDATA_TY() != null ? item.getDATA_TY().intValue() : null);
+
+            entity.updateLastInspectionDateFromString(item.getLAST_INSPD());
 
             repository.save(entity);
-            log.debug("저장 완료: ID = {}", item.getOBJT_ID());
+            log.debug("Upsert 완료: ID = {}", id);
         }
 
-        log.info("전체 데이터 저장 완료. 저장 건수: {}", items.size());
+        log.info("전체 데이터 Upsert 완료. 처리 건수: {}", items.size());
     }
 
+    // 반경 내 안심벨 조회 메서드
     public List<EmergencyBell> findNearbyEmergencyBells(double userLat, double userLon, double radiusInMeters) {
         return repository.findWithinRadius(userLat, userLon, radiusInMeters);
-    } //db에서 해당 반경 내 위치들을 반환
+    }
 }
-
-
