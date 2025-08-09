@@ -25,4 +25,11 @@ public class EmergencyBellController {
             @RequestParam(defaultValue = "10") int numOfRows) throws Exception {
         return service.getEmergencyBellDataAsJson(pageNo, numOfRows);
     }
+
+    @GetMapping("/update-db")
+    public String updateDb() throws Exception {
+        EmergencyBellXmlDto dto = service.getEmergencyBellData(1, 100);
+        service.saveOrUpdateEmergencyBells(dto.getBody().getItems().getItem());
+        return "DB update complete";
+    }
 }

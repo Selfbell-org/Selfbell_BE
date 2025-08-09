@@ -39,10 +39,10 @@ public class Alert {
     @Column(nullable = false)
     private LocalDateTime sendAt;
 
-    @Column(precision = 10, scale = 6)
+    @Column(nullable = false)
     private BigDecimal latitude;
 
-    @Column(precision = 10, scale = 6)
+    @Column(nullable = false)
     private BigDecimal longitude;
 
     @ManyToOne(fetch = FetchType.LAZY)
