@@ -1,7 +1,7 @@
 package com.selfbell.alert.domain;
 
+import com.selfbell.address.domain.Address;
 import com.selfbell.criminal.domain.Criminal;
-import com.selfbell.place.domain.Place;
 import com.selfbell.user.domain.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -46,8 +46,8 @@ public class Alert {
     private BigDecimal longitude;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "place_id", nullable = false)
-    private Place place;
+    @JoinColumn(name = "address_id", nullable = false)
+    private Address address;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
