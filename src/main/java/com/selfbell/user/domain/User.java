@@ -4,7 +4,6 @@ import com.selfbell.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.selfbell.user.domain.Role;
 
 @Entity
 @Table(name = "users")
