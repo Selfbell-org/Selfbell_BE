@@ -3,6 +3,7 @@ package com.selfbell.emergencybell.controller;
 import com.selfbell.emergencybell.dto.EmergencyBellSummaryDto;
 import com.selfbell.emergencybell.dto.EmergencyBellXmlDto;
 import com.selfbell.emergencybell.service.EmergencyBellService;
+import com.selfbell.emergencybell.dto.NearbyEmergencyBellsResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,14 +41,19 @@ public class EmergencyBellController {
     public String updateDb() throws Exception {
         var dto = service.getEmergencyBellData(1, 100);
         service.saveOrUpdateEmergencyBells(dto.getBody().getItems().getItem());
+        //에러처리
         return "DB update complete";
     }
 
     @GetMapping("/nearby")
-    public List<EmergencyBellSummaryDto> getNearbyEmergencyBells(
+    public NearbyEmergencyBellsResponseDto getNearbyEmergencyBells(
             @RequestParam double lat,
             @RequestParam double lon,
             @RequestParam double radius) {
-        return service.findNearbyEmergencyBells(lat, lon, radius);
+
+        List<EmergencyBellSummaryDto> nearbyList = service.findNearbyEmergencyBells(lat, lon, radius);
+        int totalCount = nearbyList.size();
+
+        return new NearbyEmergencyBellsResponseDto(totalCount, nearbyList); //responseentity로 반환
     }
 }
