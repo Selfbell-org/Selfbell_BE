@@ -1,6 +1,7 @@
 package com.selfbell.user.dto;
 
 import com.selfbell.device.domain.enums.DeviceType;
+import com.selfbell.user.domain.Role;
 import com.selfbell.user.domain.User;
 import lombok.Getter;
 
@@ -18,6 +19,7 @@ public class UserSignUpRequestDTO {
                 .name(name)
                 .phoneNumber(phoneNumber)
                 .password(hashedPassword)
+                .role(Role.USER)
                 .build();
     }
 
