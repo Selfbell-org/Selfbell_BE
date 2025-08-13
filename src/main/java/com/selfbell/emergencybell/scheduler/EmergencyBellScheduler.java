@@ -3,6 +3,7 @@ package com.selfbell.emergencybell.scheduler;
 import com.selfbell.emergencybell.service.EmergencyBellService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -11,17 +12,37 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class EmergencyBellScheduler {
 
-    private final EmergencyBellService emergencyBellService;
+    private final EmergencyBellService service;
 
-    @Scheduled(cron = "0 0 0 * * *") // 자정마다 api 호출 후 db 업데이트
-    public void updateEmergencyBellData() { //upsert 구현
+    // application.yml에서 조정 가능 (기본: 자정에 증분)
+    @Value("${emergencybell.scheduler.incremental-cron:0 0 0 * * *}")
+    private String incrementalCron;
+
+    // application.yml에서 조정 가능 (기본: 일요일 새벽 3시 전체)
+    @Value("${emergencybell.scheduler.full-cron:0 0 3 * * SUN}")
+    private String fullCron;
+
+    /** 매일 증분 동기화 */
+    @Scheduled(cron = "${emergencybell.scheduler.incremental-cron:0 0 0 * * *}")
+    public void scheduledIncremental() {
         try {
-            var dto = emergencyBellService.getEmergencyBellData(1, 100);
-            emergencyBellService.saveOrUpdateEmergencyBells(dto.getBody().getItems().getItem());
-
-            log.info("안심벨 데이터 DB 자동 업데이트 완료 - {}", java.time.LocalDateTime.now());
+            log.info("[스케줄] 증분 동기화 시작");
+            service.incrementalSync();
+            log.info("[스케줄] 증분 동기화 완료");
         } catch (Exception e) {
-            log.error("안심벨 데이터 업데이트 중 에러 발생: {}", e.getMessage(), e);
+            log.error("[스케줄] 증분 동기화 실패: {}", e.getMessage(), e);
+        }
+    }
+
+    /** 주 1회 전체 동기화 */
+    @Scheduled(cron = "${emergencybell.scheduler.full-cron:0 0 3 * * SUN}")
+    public void scheduledFull() {
+        try {
+            log.info("[스케줄] 전체 동기화 시작");
+            service.fullSyncBulk();
+            log.info("[스케줄] 전체 동기화 완료");
+        } catch (Exception e) {
+            log.error("[스케줄] 전체 동기화 실패: {}", e.getMessage(), e);
         }
     }
 }

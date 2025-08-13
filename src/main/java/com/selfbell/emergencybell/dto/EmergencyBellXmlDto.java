@@ -52,7 +52,6 @@ public class EmergencyBellXmlDto {
         private List<Item> item;
     }
 
-    // Item: API에서 필요한 9개 필드만 파싱
     @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter
     @NoArgsConstructor

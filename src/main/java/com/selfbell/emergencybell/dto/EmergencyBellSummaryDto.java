@@ -1,5 +1,6 @@
 package com.selfbell.emergencybell.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -7,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL) //null 필드는 JSON에서 제외(= 상세정보에서 distance 빠짐)
 public class EmergencyBellSummaryDto {
 
     @JsonProperty("lon")
@@ -37,5 +39,5 @@ public class EmergencyBellSummaryDto {
     private Double y;
 
     @JsonProperty("distance")
-    private Double distance; // optional, 반경조회시 미터 단위로 포함
+    private Double distance; // 반경 조회시에만 세팅
 }
