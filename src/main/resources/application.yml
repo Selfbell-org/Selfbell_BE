@@ -1,20 +1,38 @@
 spring:
+  application:
+    name: selfbell
+
   datasource:
-    url: jdbc:mysql://localhost:3306/selfbell?serverTimezone=Asia/Seoul
+    url: jdbc:mysql://localhost:3306/selfbell?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
-    password: heewon1203
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update       # properties의 설정을 반영(create-drop -> update)
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 server:
   port: 8080
 
 jwt:
   secret: pZuF8JaMjWTU7T9mvylnGNb8mznAyhVk61QiiCO00WZ7YHAM94pANFQAM6+qsnf9wLwVyPS+s60oiWNeIf2QRw==
+
+api:
+  criminal:
+    key: Vlqz8NtAzTMLQvtrUsF1w3Jcwom2YRvwqDSqV0iL%2FlL9tkkNdJ2e8pJ9t8TSC%2FHnlwfY8EVzqPgCZXS6i9B%2FTg%3D%3D
+  emergencybell:
+    key: QRB8DCFS-QRB8-QRB8-QRB8-QRB8DCFSTV
+
+## aoFuNPSU9oIvi2kB3SwzVwrZwORgdGV9NPI8crbLQV%2FtA7Yg%2F%2BcD65%2BnEp%2BDG5A2Jdz5vPbjLthD2rgv1qX6YQ%3D%3D
+## aoFuNPSU9oIvi2kB3SwzVwrZwORgdGV9NPI8crbLQV/tA7Yg/+cD65+nEp+DG5A2Jdz5vPbjLthD2rgv1qX6YQ==
+
