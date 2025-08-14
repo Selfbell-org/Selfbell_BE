@@ -35,6 +35,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-security' //로그인 생략, 배포시 수정하기
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml' //XML 응답을 처리할 수 있는 JAXB 기반 컨버터 등록(성범죄자 api)
 }
 
 tasks.named('test') {

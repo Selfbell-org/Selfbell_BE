@@ -1,20 +1,60 @@
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/selfbell?serverTimezone=Asia/Seoul
-    username: root
-    password: heewon1203
-    driver-class-name: com.mysql.cj.jdbc.Driver
 
+# 공통 설정 (dev/prod 둘 다 공통)
+spring:
+  application:
+    name: selfbell
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+server:
+  port: ${SERVER_PORT:8080}  # 기본 8080, 환경변수로 바꾸고 싶으면 SERVER_PORT로 주입
+
+jwt:
+  secret: ${JWT_SECRET}  # 운영에서는 반드시 환경변수로 주입
+
+api:
+  criminal:
+    key: ${CRIMINAL_API_KEY}
+  emergencybell:
+    key: ${EMERGENCYBELL_API_KEY}
+
+---
+# 로컬 개발용 (기본 활성 프로필)
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/selfbell?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
-server:
-  port: 8080
-
-jwt:
-  secret: pZuF8JaMjWTU7T9mvylnGNb8mznAyhVk61QiiCO00WZ7YHAM94pANFQAM6+qsnf9wLwVyPS+s60oiWNeIf2QRw==
+---
+# 운영용(prod) – 모든 값을 환경변수로 주입
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${MYSQL_URL}         # 예: jdbc:mysql://<RDS-엔드포인트>:3306/selfbell?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update        # 초기 스키마만들기 끝났으면 validate 권장
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
