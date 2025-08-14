@@ -29,10 +29,9 @@ jwt:
 
 api:
   criminal:
-    key: Vlqz8NtAzTMLQvtrUsF1w3Jcwom2YRvwqDSqV0iL%2FlL9tkkNdJ2e8pJ9t8TSC%2FHnlwfY8EVzqPgCZXS6i9B%2FTg%3D%3D
+    key: aoFuNPSU9oIvi2kB3SwzVwrZwORgdGV9NPI8crbLQV%2FtA7Yg%2F%2BcD65%2BnEp%2BDG5A2Jdz5vPbjLthD2rgv1qX6YQ%3D%3D
   emergencybell:
     key: QRB8DCFS-QRB8-QRB8-QRB8-QRB8DCFSTV
 
 ## aoFuNPSU9oIvi2kB3SwzVwrZwORgdGV9NPI8crbLQV%2FtA7Yg%2F%2BcD65%2BnEp%2BDG5A2Jdz5vPbjLthD2rgv1qX6YQ%3D%3D
 ## aoFuNPSU9oIvi2kB3SwzVwrZwORgdGV9NPI8crbLQV/tA7Yg/+cD65+nEp+DG5A2Jdz5vPbjLthD2rgv1qX6YQ==
-
