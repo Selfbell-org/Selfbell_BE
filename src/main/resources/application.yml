@@ -1,20 +1,8 @@
+
+# 공통 설정 (dev/prod 둘 다 공통)
 spring:
   application:
     name: selfbell
-
-  datasource:
-    url: jdbc:mysql://localhost:3306/selfbell?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: root
-    password: ${MYSQL_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update       # properties의 설정을 반영(create-drop -> update)
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
 
 logging:
   level:
@@ -22,16 +10,51 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}  # 기본 8080, 환경변수로 바꾸고 싶으면 SERVER_PORT로 주입
 
 jwt:
-  secret: pZuF8JaMjWTU7T9mvylnGNb8mznAyhVk61QiiCO00WZ7YHAM94pANFQAM6+qsnf9wLwVyPS+s60oiWNeIf2QRw==
+  secret: ${JWT_SECRET}  # 운영에서는 반드시 환경변수로 주입
 
 api:
   criminal:
-    key: aoFuNPSU9oIvi2kB3SwzVwrZwORgdGV9NPI8crbLQV%2FtA7Yg%2F%2BcD65%2BnEp%2BDG5A2Jdz5vPbjLthD2rgv1qX6YQ%3D%3D
+    key: ${CRIMINAL_API_KEY}
   emergencybell:
-    key: QRB8DCFS-QRB8-QRB8-QRB8-QRB8DCFSTV
+    key: ${EMERGENCYBELL_API_KEY}
 
-## aoFuNPSU9oIvi2kB3SwzVwrZwORgdGV9NPI8crbLQV%2FtA7Yg%2F%2BcD65%2BnEp%2BDG5A2Jdz5vPbjLthD2rgv1qX6YQ%3D%3D
-## aoFuNPSU9oIvi2kB3SwzVwrZwORgdGV9NPI8crbLQV/tA7Yg/+cD65+nEp+DG5A2Jdz5vPbjLthD2rgv1qX6YQ==
+---
+# 로컬 개발용 (기본 활성 프로필)
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/selfbell?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+---
+# 운영용(prod) – 모든 값을 환경변수로 주입
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${MYSQL_URL}         # 예: jdbc:mysql://<RDS-엔드포인트>:3306/selfbell?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update        # 초기 스키마만들기 끝났으면 validate 권장
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
