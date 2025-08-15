@@ -11,7 +11,6 @@ public class UserSignUpRequestDTO {
     private String name;
     private String phoneNumber;
     private String password;
-    private String deviceToken;
     private String deviceType;
 
     public User toUser(String hashedPassword) {
