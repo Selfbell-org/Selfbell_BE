@@ -1,20 +1,34 @@
 spring:
+  profiles:
+    active: prod
   datasource:
-    url: jdbc:mysql://localhost:3306/selfbell
-    username: root
-    password: ${MYSQL_PASSWORD}
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     database: mysql
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         use_sql_comments: true
-server:
-  port: 8080
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${jwt.secret}
+
+api:
+  criminal:
+    key: ${api.criminal.key}
+  emergencybell:
+    key: ${api.emergencybell.key}
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+server:
+  port: 8080
