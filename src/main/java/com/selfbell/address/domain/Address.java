@@ -3,8 +3,6 @@ package com.selfbell.address.domain;
 import com.selfbell.global.entity.BaseTimeEntity;
 import com.selfbell.user.domain.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -36,10 +34,4 @@ public class Address extends BaseTimeEntity {
 
     @Column(nullable = false)
     private BigDecimal longitude; // 경도
-
-    @Builder.Default
-    @Min(100)
-    @Max(1000)
-    @Column(name = "radius_m", nullable = false, columnDefinition = "int default 500")
-    private int radiusM = 500;
 }

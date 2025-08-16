@@ -3,11 +3,9 @@ package com.selfbell.user.domain;
 import com.selfbell.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "users")
-@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
