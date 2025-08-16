@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -12,10 +14,10 @@ import lombok.*;
 public class EmergencyBellSummaryDto {
 
     @JsonProperty("lon")
-    private Double lon;
+    private BigDecimal lon;
 
     @JsonProperty("lat")
-    private Double lat;
+    private BigDecimal lat;
 
     @JsonProperty("ins_DETAIL")
     private String insDetail;

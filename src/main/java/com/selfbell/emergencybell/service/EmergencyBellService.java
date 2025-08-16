@@ -15,9 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.Optional;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
@@ -25,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,7 +48,7 @@ public class EmergencyBellService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final XmlMapper xmlMapper;              // 새로 주입 (XmlMapperConfig에서 등록)
+    private final XmlMapper xmlMapper;              // XmlMapperConfig에서 등록
     private final EmergencyBellRepository repository;
     private final JdbcTemplate jdbcTemplate;
 
@@ -58,10 +58,10 @@ public class EmergencyBellService {
     /** 외부 API 호출 (XML) — URL 인코딩/키 보존 + XML 정화 */
     public EmergencyBellXmlDto getEmergencyBellData(int pageNo, int numOfRows) throws Exception {
         URI uri = UriComponentsBuilder.fromHttpUrl(BASE_URL)
-                .queryParam("serviceKey", serviceKey)   // 이미 인코딩된 키도 build(true)로 안전 보존
+                .queryParam("serviceKey", serviceKey)
                 .queryParam("pageNo", pageNo)
                 .queryParam("numOfRows", numOfRows)
-                .build(true)                            // pre-encoded 보호
+                .build(true)
                 .toUri();
 
         log.info("API 호출 URL: {}", uri);
@@ -117,8 +117,8 @@ public class EmergencyBellService {
         var raw = repository.findWithinRadiusRaw(userLat, userLon, radiusInMeters);
         return raw.stream().map(row -> {
             Long id = row[0] != null ? ((Number) row[0]).longValue() : null;
-            Double latitude = row[1] != null ? ((Number) row[1]).doubleValue() : null;
-            Double longitude = row[2] != null ? ((Number) row[2]).doubleValue() : null;
+            BigDecimal latitude = row[1] != null ? new BigDecimal(row[1].toString()) : null;
+            BigDecimal longitude = row[2] != null ? new BigDecimal(row[2].toString()) : null;
             String installDetail = row[3] != null ? row[3].toString() : null;
             String managementPhone = row[4] != null ? row[4].toString() : null;
             String lotNumberAddress = row[5] != null ? row[5].toString() : null;
@@ -226,8 +226,8 @@ public class EmergencyBellService {
                     EmergencyBellXmlDto.Item it = slice.get(i);
 
                     setNullableLong(ps, 1, it.getOBJT_ID());
-                    setNullableDouble(ps, 2, it.getLON());
-                    setNullableDouble(ps, 3, it.getLAT());
+                    setNullableBigDecimal(ps, 2, it.getLON());
+                    setNullableBigDecimal(ps, 3, it.getLAT());
                     setNullableString(ps, 4, it.getINS_DETAIL());
                     setNullableString(ps, 5, it.getMNG_TEL());
                     setNullableString(ps, 6, it.getADRES());
@@ -258,6 +258,11 @@ public class EmergencyBellService {
     private void setNullableLong(PreparedStatement ps, int index, Long value) throws SQLException {
         if (value == null) ps.setNull(index, Types.BIGINT);
         else ps.setLong(index, value);
+    }
+
+    private void setNullableBigDecimal(PreparedStatement ps, int index, BigDecimal value) throws SQLException {
+        if (value == null) ps.setNull(index, Types.DECIMAL);
+        else ps.setBigDecimal(index, value);
     }
 
     /** 전체 페이지 순회 + JDBC Batch Upsert (안정화) */

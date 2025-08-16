@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @JacksonXmlRootElement(localName = "response")
@@ -61,10 +62,10 @@ public class EmergencyBellXmlDto {
         private Long OBJT_ID;
 
         @JacksonXmlProperty(localName = "LAT")
-        private Double LAT;
+        private BigDecimal LAT;
 
         @JacksonXmlProperty(localName = "LON")
-        private Double LON;
+        private BigDecimal LON;
 
         @JacksonXmlProperty(localName = "INS_DETAIL")
         private String INS_DETAIL;
