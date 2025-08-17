@@ -9,19 +9,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.security.Principal;
 
 @RestController
-@RequestMapping("/api/safe-walks")
+@RequestMapping("/api/v1/safe-walks")
 @RequiredArgsConstructor
 public class SafeWalkSessionController {
 
     private final SafeWalkService safeWalkService;
 
-    @PostMapping("/{userId}")
+    @PostMapping
     public ResponseEntity<SessionCreateResponse> startSession(
-            // TODO: 커스텀 어노테이션으로 인증된 사용자 ID를 가져오기, 현재는 우선 PathVariable로 처리
-            @PathVariable(name = "userId") Long userId,
+            // TODO: 커스텀 어노테이션으로 인증된 사용자 ID를 가져오기, 현재는 우선 RequestParam로 처리
+            @RequestParam Long userId,
             @RequestBody @Valid SessionCreateRequest request
     ) {
         SessionCreateResponse response = safeWalkService.createSession(userId, request);
