@@ -20,5 +20,4 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of("INVALID_ARGUMENT", e.getMessage());
         return ResponseEntity.badRequest().body(error);
     }
-
 }
