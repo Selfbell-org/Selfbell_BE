@@ -2,6 +2,7 @@ package com.selfbell.safewalk.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@Profile("!prod")
 @RequestMapping("/api/v1/websocket-test")
 @RequiredArgsConstructor
 public class WebSocketTestController {
