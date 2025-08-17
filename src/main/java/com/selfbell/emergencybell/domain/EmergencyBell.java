@@ -22,7 +22,7 @@ public class EmergencyBell {
     @Column(name = "lon", precision = 11, scale = 8)
     private BigDecimal lon;
 
-    @Column(name = "lat", precision = 10, scale = 8)
+    @Column(name = "lat", precision = 11, scale = 8)
     private BigDecimal lat;
 
     @Column(name = "ins_DETAIL")
