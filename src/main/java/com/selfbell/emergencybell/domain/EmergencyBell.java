@@ -3,6 +3,8 @@ package com.selfbell.emergencybell.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "emergency_bell")
 @Getter
@@ -16,11 +18,12 @@ public class EmergencyBell {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "lon")
-    private Double lon;
+    // 논의 후 정밀도/스케일 권장값 지정 예정
+    @Column(name = "lon", precision = 11, scale = 8)
+    private BigDecimal lon;
 
-    @Column(name = "lat")
-    private Double lat;
+    @Column(name = "lat", precision = 11, scale = 8)
+    private BigDecimal lat;
 
     @Column(name = "ins_DETAIL")
     private String ins_DETAIL;
@@ -39,4 +42,23 @@ public class EmergencyBell {
 
     @Column(name = "y")
     private Double y;
+
+    public void updateFromItem(Long objtId,
+                               BigDecimal lat,
+                               BigDecimal lon,
+                               String insDetail,
+                               String mngTel,
+                               String adres,
+                               String insType,
+                               Double x,
+                               Double y) {
+        this.lat = lat;
+        this.lon = lon;
+        this.ins_DETAIL = insDetail;
+        this.mng_TEL = mngTel;
+        this.adres = adres;
+        this.ins_TYPE = insType;
+        this.x = x;
+        this.y = y;
+    }
 }

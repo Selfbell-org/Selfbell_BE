@@ -6,8 +6,6 @@ import com.selfbell.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import javax.management.relation.Relation;
-
 @Entity
 @Table(name = "contacts", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "contact_id"})})
 @Getter
