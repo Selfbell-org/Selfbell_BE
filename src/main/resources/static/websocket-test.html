@@ -112,7 +112,7 @@
                 capturedAt: new Date().toISOString().slice(0, 19)
             };
 
-            fetch(`/api/v1/safe-walk/${sessionId}/track?userId=4`, {
+            fetch(`/api/v1/safe-walks/${sessionId}/track?userId=4`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
