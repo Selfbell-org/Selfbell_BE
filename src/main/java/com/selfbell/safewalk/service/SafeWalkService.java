@@ -44,7 +44,7 @@ public class SafeWalkService {
 
         final LocalDateTime now = LocalDateTime.now();
 
-        final SafeWalkSession session = createSafeWalkSession(
+        final SafeWalkSession session = SafeWalkSession.createSession(
                 user,
                 createGeoPointFromOrigin(request.origin()), request.originAddress(),
                 createGeoPointFromDestination(request.destination()), request.destinationAddress(),
