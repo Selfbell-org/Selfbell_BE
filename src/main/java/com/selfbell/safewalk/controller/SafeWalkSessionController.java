@@ -6,12 +6,10 @@ import com.selfbell.safewalk.service.SafeWalkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/safe-walks")
@@ -20,9 +18,10 @@ public class SafeWalkSessionController {
 
     private final SafeWalkService safeWalkService;
 
-    @PostMapping
+    @PostMapping("/{userId}")
     public ResponseEntity<SessionCreateResponse> startSession(
-            Long userId,
+            // TODO: 커스텀 어노테이션으로 인증된 사용자 ID를 가져오기, 현재는 우선 PathVariable로 처리
+            @PathVariable(name = "userId") Long userId,
             @RequestBody @Valid SessionCreateRequest request
     ) {
         SessionCreateResponse response = safeWalkService.createSession(userId, request);
