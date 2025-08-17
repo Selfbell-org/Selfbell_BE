@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,7 +33,7 @@ public class SafeWalkTrack extends BaseTimeEntity {
     })
     private GeoPoint point;
 
-    @Column(name = "accuracy_m")
+    @Column(name = "accuracy_m", precision = 6, scale = 2)
     private Double accuracyM;
 
     @Column(name = "captured_at", nullable = false)
