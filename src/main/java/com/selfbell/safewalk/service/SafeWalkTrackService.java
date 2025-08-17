@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+import static com.selfbell.safewalk.service.SafeWalkService.validateSessionAccess;
+import static com.selfbell.safewalk.service.SafeWalkService.validateSessionActive;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -54,21 +57,6 @@ public class SafeWalkTrackService {
                 .orElseThrow(() -> new SessionNotFoundException(sessionId));
     }
 
-    private void validateSessionAccess(final SafeWalkSession session, final Long userId) {
-        if (!session.getWard().getId().equals(userId)) {
-            log.warn("세션 접근 권한이 없습니다. 세션 ID: {}, 요청 사용자 ID: {}, 세션 소유자 ID: {}", 
-                session.getId(), userId, session.getWard().getId());
-            throw new SessionAccessDeniedException(session.getId(), userId);
-        }
-    }
-
-    private void validateSessionActive(final SafeWalkSession session) {
-        if (!session.isActive()) {
-            log.warn("비활성화된 세션에 트랙 업로드 시도. 세션 ID: {}, 상태: {}", 
-                session.getId(), session.getSafeWalkStatus());
-            throw new SessionNotActiveException(session.getId());
-        }
-    }
 
     private SafeWalkTrack createTrack(final SafeWalkSession session, final TrackUploadRequest request) {
         final GeoPoint point = GeoPoint.of(request.lat(), request.lon());

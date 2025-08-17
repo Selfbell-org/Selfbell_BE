@@ -88,4 +88,9 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
     public boolean isActive() {
         return safeWalkStatus == SafeWalkStatus.IN_PROGRESS && endedAt == null;
     }
+
+    public void endSession(){
+        this.endedAt = LocalDateTime.now();
+        this.safeWalkStatus = SafeWalkStatus.MANUAL_END;
+    }
 }

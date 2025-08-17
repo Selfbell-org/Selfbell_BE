@@ -2,6 +2,8 @@ package com.selfbell.safewalk.controller;
 
 import com.selfbell.safewalk.dto.SessionCreateRequest;
 import com.selfbell.safewalk.dto.SessionCreateResponse;
+import com.selfbell.safewalk.dto.SessionEndRequest;
+import com.selfbell.safewalk.dto.SessionEndResponse;
 import com.selfbell.safewalk.service.SafeWalkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +21,20 @@ public class SafeWalkSessionController {
 
     @PostMapping
     public ResponseEntity<SessionCreateResponse> startSession(
-            // TODO: 커스텀 어노테이션으로 인증된 사용자 ID를 가져오기, 현재는 우선 RequestParam로 처리
-            @RequestParam Long userId,
+            @RequestParam Long userId, // TODO: 인증 구현 후 @CurrentUser로 변경
             @RequestBody @Valid SessionCreateRequest request
     ) {
         SessionCreateResponse response = safeWalkService.createSession(userId, request);
         return ResponseEntity.created(URI.create("/api/safe-walks/" + response.sessionId())).body(response);
+    }
+
+    @PutMapping("/{sessionId}/end")
+    public ResponseEntity<SessionEndResponse> endSession(
+            @PathVariable Long sessionId,
+            @RequestParam Long userId, // TODO: 인증 구현 후 @CurrentUser로 변경
+            @RequestBody @Valid SessionEndRequest request
+    ) {
+        SessionEndResponse response = safeWalkService.endSession(sessionId, userId, request);
+        return ResponseEntity.ok(response);
     }
 }
