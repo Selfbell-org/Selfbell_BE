@@ -33,7 +33,7 @@ public class SafeWalkTrack extends BaseTimeEntity {
     })
     private GeoPoint point;
 
-    @Column(name = "accuracy_m", precision = 6, scale = 2)
+    @Column(name = "accuracy_m")
     private Double accuracyM;
 
     @Column(name = "captured_at", nullable = false)
