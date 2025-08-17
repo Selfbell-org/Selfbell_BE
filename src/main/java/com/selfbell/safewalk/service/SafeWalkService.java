@@ -55,7 +55,7 @@ public class SafeWalkService {
 
         safeWalkSessionRepository.save(session);
 
-        createGuardians(session, request.guardiansIds());
+        createGuardians(session, request.guardianIds());
         // TODO: 알림 서비스
         
         return SessionCreateResponse.from(session);
@@ -94,8 +94,8 @@ public class SafeWalkService {
         return parsedTime;
     }
 
-    private LocalDateTime calculateTimerEnd(final int timerMinutes, final LocalDateTime now) {
-        if (timerMinutes <= 0) {
+    private LocalDateTime calculateTimerEnd(final Integer timerMinutes, final LocalDateTime now) {
+        if (timerMinutes == null || timerMinutes <= 0) {
             return null;
         }
         return now.plusMinutes(timerMinutes);
