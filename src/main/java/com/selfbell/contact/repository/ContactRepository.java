@@ -1,14 +1,32 @@
 package com.selfbell.contact.repository;
 
 import com.selfbell.contact.domain.Contact;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.selfbell.contact.domain.enums.Status;
+import com.selfbell.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
-import java.util.List;
 
 public interface ContactRepository extends JpaRepository<Contact, Long> {
 
-    Optional<Contact> findByUserIdAndContactId(Long userId, Long contactId);
+    boolean existsByUserAndContact(User user, User contact);
+    boolean existsByUserAndContactOrUserAndContact(User u1, User c1, User u2, User c2);
 
-    List<Contact> findAllByUserId(Long userId);
+    @Query("""
+           select c from Contact c
+           where (c.user = :me or c.contact = :me)
+           and (:status is null or c.status = :status)
+           """)
+    Page<Contact> findAllForMeWithStatus(@Param("me") User me,
+                                         @Param("status") Status status,
+                                         Pageable pageable);
+
+    @Query("""
+           select c from Contact c
+           where c.id = :id and (c.user = :me or c.contact = :me)
+           """)
+    Optional<Contact> findByIdIfParticipant(@Param("id") Long id, @Param("me") User me);
 }
