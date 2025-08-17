@@ -1,10 +1,12 @@
 package com.selfbell.contact.domain;
 
-import com.selfbell.contact.domain.enums.Relation;
 import com.selfbell.contact.domain.enums.Status;
+import com.selfbell.global.entity.BaseTimeEntity;
 import com.selfbell.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+
+import javax.management.relation.Relation;
 
 @Entity
 @Table(name = "contacts", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "contact_id"})})
@@ -12,7 +14,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Contact {
+public class Contact extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +30,8 @@ public class Contact {
     @JoinColumn(name = "contact_id", nullable = false)
     private User contact;
 
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private Relation relation = Relation.FRIEND;
+    private String relation;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -41,4 +41,3 @@ public class Contact {
     @Column(name = "share_permission", nullable = false)
     private boolean sharePermission;
 }
-
