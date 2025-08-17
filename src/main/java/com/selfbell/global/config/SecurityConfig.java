@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/criminals/**").permitAll()
                         .requestMatchers("/api/v1/emergency-bells/**").permitAll()
+                        .requestMatchers("/api/v1/safe-walks/**").permitAll()  // 임시로 추가
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
