@@ -7,22 +7,30 @@ import com.selfbell.safewalk.dto.Destination;
 import com.selfbell.safewalk.dto.Origin;
 import com.selfbell.safewalk.dto.SessionCreateRequest;
 import com.selfbell.safewalk.dto.SessionCreateResponse;
+import com.selfbell.safewalk.domain.SafeWalkGuardian;
+import com.selfbell.safewalk.exception.ActiveSessionExistsException;
+import com.selfbell.safewalk.repository.SafeWalkGuardianRepository;
 import com.selfbell.safewalk.repository.SafeWalkSessionRepository;
 import com.selfbell.user.domain.User;
 import com.selfbell.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import static com.selfbell.safewalk.domain.SafeWalkGuardian.createGuardian;
 import static com.selfbell.safewalk.domain.SafeWalkSession.createSafeWalkSession;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SafeWalkService {
 
     private final SafeWalkSessionRepository safeWalkSessionRepository;
+    private final SafeWalkGuardianRepository safeWalkGuardianRepository;
 
     private final UserService userService;
 
@@ -31,25 +39,35 @@ public class SafeWalkService {
             final Long userId,
             final SessionCreateRequest request
     ) {
-        // TODO: 단일 진행중인 세션이 있는지 확인하는 로직 추가 필요
         final User user = userService.findByIdOrThrow(userId);
+        validateNoActiveSession(user);
+
         final LocalDateTime now = LocalDateTime.now();
 
         final SafeWalkSession session = createSafeWalkSession(
                 user,
                 createGeoPointFromOrigin(request.origin()), request.originAddress(),
                 createGeoPointFromDestination(request.destination()), request.destinationAddress(),
-                parseExpectedArrival(request.expectedArrival()),
+                parseAndValidateExpectedArrival(request.expectedArrival()),
                 calculateTimerEnd(request.timerMinutes(), now),
                 now, null, SafeWalkStatus.IN_PROGRESS
                 );
 
         safeWalkSessionRepository.save(session);
 
-        // TODO: 세션 시작 시 트랙과 가디언도 생성
-        // TODO: 알림 발송 로직 추가
+        createGuardians(session, request.guardiansIds());
+        // TODO: 알림 서비스
         
         return SessionCreateResponse.from(session);
+    }
+
+
+    private void validateNoActiveSession(User ward) {
+        safeWalkSessionRepository.findActiveSessionByWard(ward, SafeWalkStatus.IN_PROGRESS)
+                .ifPresent(session -> {
+                    log.info("해당 유저의 이미 진행중인 세션이 있습니다. 세션 ID: {}", session.getId());
+                    throw new ActiveSessionExistsException(session.getId());
+                });
     }
 
     private GeoPoint createGeoPointFromOrigin(final Origin origin) {
@@ -60,11 +78,20 @@ public class SafeWalkService {
         return GeoPoint.of(destination.lat(), destination.lon());
     }
 
-    private LocalDateTime parseExpectedArrival(final String expectedArrival) {
+    private LocalDateTime parseAndValidateExpectedArrival(final String expectedArrival) {
         if (expectedArrival == null || expectedArrival.isEmpty()) {
             return null;
         }
-        return LocalDateTime.parse(expectedArrival);
+
+        LocalDateTime parsedTime = LocalDateTime.parse(expectedArrival);
+
+        // 도착 예정 시간이 과거인지 검증
+        if (parsedTime.isBefore(LocalDateTime.now())) {
+            log.warn("도착 예정 시간이 과거입니다. 입력값: {}", expectedArrival);
+            throw new IllegalArgumentException("도착 예정 시간은 현재 시간보다 미래여야 합니다");
+        }
+
+        return parsedTime;
     }
 
     private LocalDateTime calculateTimerEnd(final int timerMinutes, final LocalDateTime now) {
@@ -72,5 +99,22 @@ public class SafeWalkService {
             return null;
         }
         return now.plusMinutes(timerMinutes);
+    }
+
+    private void createGuardians(final SafeWalkSession session, final List<Long> guardianIds) {
+        if (guardianIds == null || guardianIds.isEmpty()) {
+            log.info("보호자 리스트가 비어있습니다. 세션 ID: {}", session.getId());
+            return;
+        }
+
+        final List<Long> distinctGuardians = guardianIds.stream().distinct().toList();
+
+        final List<SafeWalkGuardian> safeWalkGuardianList = distinctGuardians.stream()
+                .map(userService::findByIdOrThrow)
+                .map(guardian -> createGuardian(session, guardian))
+                .toList();
+
+        safeWalkGuardianRepository.saveAll(safeWalkGuardianList);
+        log.info("보호자 {}명을 세션에 추가했습니다. 세션 ID: {}", safeWalkGuardianList.size(), session.getId());
     }
 }

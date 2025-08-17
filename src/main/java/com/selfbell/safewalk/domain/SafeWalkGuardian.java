@@ -31,4 +31,11 @@ public class SafeWalkGuardian {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "guardian_id", nullable = false)
     private User guardian;
+
+    public static SafeWalkGuardian createGuardian(SafeWalkSession session, User guardian) {
+        return SafeWalkGuardian.builder()
+            .session(session)
+            .guardian(guardian)
+            .build();
+    }
 }
