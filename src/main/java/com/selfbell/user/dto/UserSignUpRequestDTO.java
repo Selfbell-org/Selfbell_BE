@@ -11,6 +11,7 @@ public class UserSignUpRequestDTO {
     private String name;
     private String phoneNumber;
     private String password;
+    private String deviceToken;   // <-- 추가!
     private String deviceType;
 
     public User toUser(String hashedPassword) {
@@ -23,6 +24,6 @@ public class UserSignUpRequestDTO {
     }
 
     public DeviceType toDeviceType() {
-        return DeviceType.valueOf(deviceType);
+        return DeviceType.valueOf(deviceType.toUpperCase()); // 대소문자 안전
     }
 }
