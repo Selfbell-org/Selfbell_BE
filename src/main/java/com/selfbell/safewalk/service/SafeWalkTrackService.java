@@ -41,8 +41,7 @@ public class SafeWalkTrackService {
         final SafeWalkTrack track = createTrack(session, request);
         safeWalkTrackRepository.save(track);
 
-        // TODO: 트랙 업로드 후 WebSocket 브로드캐스트
-        // broadcastTrackEvent(track);
+         broadcastTrackEvent(track);
         
         log.info("트랙이 업로드되었습니다. 세션 ID: {}, 트랙 ID: {}, 사용자 ID: {}", 
             sessionId, track.getId(), userId);
@@ -80,5 +79,18 @@ public class SafeWalkTrackService {
                 request.accuracyM(),
                 LocalDateTime.parse(request.capturedAt())
         );
+    }
+
+    private void broadcastTrackEvent(final SafeWalkTrack track) {
+        try {
+            final String topic = "/topic/safe-walks/" + track.getSession().getId();
+            final TrackUploadResponse response = TrackUploadResponse.from(track);
+
+            messagingTemplate.convertAndSend(topic, response);
+
+            log.debug("트랙 이벤트 브로드캐스트 완료. Topic: {}, 트랙 ID: {}", topic, track.getId());
+        } catch (Exception e) {
+            log.error("트랙 이벤트 브로드캐스트 실패. 트랙 ID: {}", track.getId(), e);
+        }
     }
 }
