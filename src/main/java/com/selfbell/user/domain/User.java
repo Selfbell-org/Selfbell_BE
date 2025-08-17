@@ -3,11 +3,7 @@ package com.selfbell.user.domain;
 import com.selfbell.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -30,4 +26,8 @@ public class User extends BaseTimeEntity {
 
     @Column(length = 100, nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private Role role;
 }

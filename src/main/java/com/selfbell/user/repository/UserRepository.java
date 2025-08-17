@@ -2,6 +2,7 @@ package com.selfbell.user.repository;
 
 import com.selfbell.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
 
 import java.util.Optional;
 

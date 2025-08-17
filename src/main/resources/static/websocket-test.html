@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOMP WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .message { background-color: #d1ecf1; color: #0c5460; margin: 5px 0; padding: 8px; border-radius: 3px; }
+        input, button { padding: 8px; margin: 5px; }
+        #messages { height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔌 STOMP WebSocket 테스트</h2>
+        
+        <div id="status" class="status disconnected">연결 안됨</div>
+        
+        <div>
+            <label>세션 ID:</label>
+            <input type="number" id="sessionId" value="3" placeholder="세션 ID 입력">
+            <button onclick="connect()">연결</button>
+            <button onclick="disconnect()">연결 해제</button>
+        </div>
+        
+        <div>
+            <h3>📨 수신된 메시지:</h3>
+            <div id="messages"></div>
+        </div>
+        
+        <div>
+            <h3>🧪 트랙 업로드 테스트:</h3>
+            <button onclick="testTrackUpload()">트랙 업로드 요청 보내기</button>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let sessionId = null;
+
+        function connect() {
+            sessionId = document.getElementById('sessionId').value;
+            if (!sessionId) {
+                alert('세션 ID를 입력하세요');
+                return;
+            }
+
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, function (frame) {
+                updateStatus('연결됨', true);
+                console.log('Connected: ' + frame);
+                
+                // 세션별 토픽 구독
+                const topic = '/topic/safe-walks/' + sessionId;
+                stompClient.subscribe(topic, function (message) {
+                    showMessage('📍 트랙 업데이트: ' + message.body);
+                });
+                
+                showMessage('✅ 토픽 구독: ' + topic);
+            }, function(error) {
+                updateStatus('연결 실패: ' + error, false);
+                console.log('Connection error: ' + error);
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+                updateStatus('연결 해제됨', false);
+                console.log('Disconnected');
+            }
+        }
+
+        function updateStatus(message, isConnected) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + (isConnected ? 'connected' : 'disconnected');
+        }
+
+        function showMessage(message) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function testTrackUpload() {
+            if (!sessionId) {
+                alert('먼저 세션 ID를 설정하고 연결하세요');
+                return;
+            }
+
+            // 랜덤 위치 생성 (강남역 근처)
+            const lat = 37.4979 + (Math.random() - 0.5) * 0.001;
+            const lon = 127.0276 + (Math.random() - 0.5) * 0.001;
+            
+            const trackData = {
+                lat: parseFloat(lat.toFixed(6)),
+                lon: parseFloat(lon.toFixed(6)),
+                accuracyM: parseFloat((Math.random() * 10 + 1).toFixed(1)),
+                capturedAt: new Date().toISOString().slice(0, 19)
+            };
+
+            fetch(`/api/v1/safe-walks/${sessionId}/track?userId=4`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(trackData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.trackId) {
+                    showMessage('🚀 트랙 업로드 성공: ' + JSON.stringify(data));
+                } else {
+                    showMessage('❌ 트랙 업로드 실패: ' + JSON.stringify(data));
+                }
+            })
+            .catch(error => {
+                showMessage('❌ 트랙 업로드 에러: ' + error);
+            });
+        }
+
+        // 페이지 로드 시 자동 연결
+        window.onload = function() {
+            showMessage('📖 사용법: 세션 ID를 입력하고 연결 버튼을 클릭하세요');
+        };
+    </script>
+</body>
+</html>

@@ -1,6 +1,8 @@
 package com.selfbell.contact.domain;
 
+import com.selfbell.contact.domain.enums.Relation;
 import com.selfbell.contact.domain.enums.Status;
+import com.selfbell.global.entity.BaseTimeEntity;
 import com.selfbell.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Contact {
+public class Contact extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,6 +24,7 @@ public class Contact {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // 친구/가족
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contact_id", nullable = false)
     private User contact;

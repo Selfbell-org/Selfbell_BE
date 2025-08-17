@@ -7,6 +7,7 @@ import com.selfbell.global.error.ApiException;
 import com.selfbell.global.error.ErrorCode;
 import com.selfbell.user.domain.User;
 import com.selfbell.user.dto.UserSignUpRequestDTO;
+import com.selfbell.user.exception.UserNotFoundException;
 import com.selfbell.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -59,5 +60,10 @@ public class UserService {
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
             throw new ApiException(ErrorCode.INVALID_INPUT, "이미 등록된 전화번호입니다.");
         }
+    }
+
+    public User findByIdOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 }
