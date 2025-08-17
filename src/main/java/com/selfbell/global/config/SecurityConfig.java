@@ -29,14 +29,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/criminals/**").permitAll()
                         .requestMatchers("/api/v1/emergency-bells/**").permitAll()
                         .requestMatchers("/api/v1/safe-walks/**").permitAll()  // 임시로 추가
+                        .requestMatchers("/ws/**").permitAll()  // WebSocket 연결 허용
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
