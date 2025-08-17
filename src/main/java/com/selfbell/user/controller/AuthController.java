@@ -2,7 +2,7 @@ package com.selfbell.user.controller;
 
 import com.selfbell.user.domain.User;
 import com.selfbell.user.dto.UserSignUpRequestDTO;
-import com.selfbell.user.dto.UserSignupResponseDTO;
+import com.selfbell.user.dto.UserSignUpResponseDTO;
 import com.selfbell.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +17,8 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserSignupResponseDTO> signUp(@RequestBody @Valid UserSignUpRequestDTO request) {
+    public ResponseEntity<UserSignUpResponseDTO> signUp(@RequestBody @Valid UserSignUpRequestDTO request) {
         User user = userService.createUser(request);
-        return ResponseEntity.status(201).body(UserSignupResponseDTO.from(user));
+        return ResponseEntity.status(201).body(UserSignUpResponseDTO.from(user));
     }
-
 }
