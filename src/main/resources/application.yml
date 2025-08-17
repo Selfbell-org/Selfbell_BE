@@ -29,6 +29,8 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.messaging: DEBUG
+    com.selfbell.safewalk.service.SafeWalkTrackService: DEBUG
 
 server:
   port: 8080
