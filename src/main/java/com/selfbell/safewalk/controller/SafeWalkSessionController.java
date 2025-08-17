@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api/safe-walks")
+@RequestMapping("/api/v1/safe-walks")
 @RequiredArgsConstructor
 public class SafeWalkSessionController {
 
