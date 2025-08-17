@@ -65,7 +65,7 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
 //    @Column(nullable = false)
 //    private Long version = 0L;
 
-    public static SafeWalkSession createSafeWalkSession(
+    public static SafeWalkSession createSession(
             User user, GeoPoint origin, String originAddress,
             GeoPoint destination, String destinationAddress,
             LocalDateTime expectedArrival, LocalDateTime timerEnd,
@@ -87,5 +87,10 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
 
     public boolean isActive() {
         return safeWalkStatus == SafeWalkStatus.IN_PROGRESS && endedAt == null;
+    }
+
+    public void endSession(){
+        this.endedAt = LocalDateTime.now();
+        this.safeWalkStatus = SafeWalkStatus.MANUAL_END;
     }
 }
