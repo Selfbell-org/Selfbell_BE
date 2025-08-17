@@ -3,9 +3,11 @@ package com.selfbell.user.domain;
 import com.selfbell.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,4 +26,8 @@ public class User extends BaseTimeEntity {
 
     @Column(length = 100, nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private Role role;
 }

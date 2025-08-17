@@ -1,6 +1,7 @@
 package com.selfbell.user.dto;
 
 import com.selfbell.device.domain.enums.DeviceType;
+import com.selfbell.user.domain.Role;
 import com.selfbell.user.domain.User;
 import lombok.Getter;
 
@@ -10,7 +11,7 @@ public class UserSignUpRequestDTO {
     private String name;
     private String phoneNumber;
     private String password;
-    private String deviceToken;
+    private String deviceToken;   // <-- 추가!
     private String deviceType;
 
     public User toUser(String hashedPassword) {
@@ -18,10 +19,11 @@ public class UserSignUpRequestDTO {
                 .name(name)
                 .phoneNumber(phoneNumber)
                 .password(hashedPassword)
+                .role(Role.USER)
                 .build();
     }
 
     public DeviceType toDeviceType() {
-        return DeviceType.valueOf(deviceType);
+        return DeviceType.valueOf(deviceType.toUpperCase()); // 대소문자 안전
     }
 }
