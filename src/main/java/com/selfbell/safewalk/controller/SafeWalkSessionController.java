@@ -1,9 +1,6 @@
 package com.selfbell.safewalk.controller;
 
-import com.selfbell.safewalk.dto.SessionCreateRequest;
-import com.selfbell.safewalk.dto.SessionCreateResponse;
-import com.selfbell.safewalk.dto.SessionEndRequest;
-import com.selfbell.safewalk.dto.SessionEndResponse;
+import com.selfbell.safewalk.dto.*;
 import com.selfbell.safewalk.service.SafeWalkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+
+import static com.selfbell.global.jwt.JwtTokenProvider.currentUserId;
 
 @RestController
 @RequestMapping("/api/v1/safe-walks")
@@ -21,9 +20,9 @@ public class SafeWalkSessionController {
 
     @PostMapping
     public ResponseEntity<SessionCreateResponse> startSession(
-            @RequestParam Long userId, // TODO: 인증 구현 후 @CurrentUser로 변경
             @RequestBody @Valid SessionCreateRequest request
     ) {
+        Long userId = currentUserId();
         SessionCreateResponse response = safeWalkService.createSession(userId, request);
         return ResponseEntity.created(URI.create("/api/safe-walks/" + response.sessionId())).body(response);
     }
@@ -31,10 +30,17 @@ public class SafeWalkSessionController {
     @PutMapping("/{sessionId}/end")
     public ResponseEntity<SessionEndResponse> endSession(
             @PathVariable Long sessionId,
-            @RequestParam Long userId, // TODO: 인증 구현 후 @CurrentUser로 변경
             @RequestBody @Valid SessionEndRequest request
     ) {
+        Long userId = currentUserId();
         SessionEndResponse response = safeWalkService.endSession(sessionId, userId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{sessionId}")
+    public ResponseEntity<SessionResponse> getSession(@PathVariable Long sessionId){
+        Long userId = currentUserId();
+        SessionResponse response = safeWalkService.getSession(userId, sessionId);
         return ResponseEntity.ok(response);
     }
 }
