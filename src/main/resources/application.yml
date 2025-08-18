@@ -24,6 +24,8 @@ api:
     key: ${api.criminal.key}
   emergencybell:
     key: ${api.emergencybell.key}
+  vworld:
+    key: ${api.vworld.key}
 
 logging:
   level:

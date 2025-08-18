@@ -78,11 +78,5 @@ public class EmergencyBellXmlDto {
 
         @JacksonXmlProperty(localName = "INS_TYPE")
         private String INS_TYPE;
-
-        @JacksonXmlProperty(localName = "X")
-        private Double X;
-
-        @JacksonXmlProperty(localName = "Y")
-        private Double Y;
     }
 }

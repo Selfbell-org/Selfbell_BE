@@ -1,6 +1,7 @@
 package com.selfbell.global.exception;
 
 import com.selfbell.global.dto.ErrorResponse;
+import com.selfbell.global.error.ApiException;
 import com.selfbell.safewalk.exception.ActiveSessionExistsException;
 import com.selfbell.safewalk.exception.SessionAccessDeniedException;
 import com.selfbell.safewalk.exception.SessionNotActiveException;
@@ -40,5 +41,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
         ErrorResponse error = ErrorResponse.of("INVALID_ARGUMENT", e.getMessage());
         return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApi(ApiException e) {
+        var ec = e.getErrorCode();
+        var body = ErrorResponse.of(ec.getCode(), e.getMessage());
+        return ResponseEntity.status(ec.getStatus()).body(body);
     }
 }
