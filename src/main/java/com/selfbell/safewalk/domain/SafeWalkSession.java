@@ -69,7 +69,7 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
             User user, GeoPoint origin, String originAddress,
             GeoPoint destination, String destinationAddress,
             LocalDateTime expectedArrival, LocalDateTime timerEnd,
-            LocalDateTime startedAt, LocalDateTime endedAt, SafeWalkStatus status
+            LocalDateTime endedAt, SafeWalkStatus status
     ) {
         return SafeWalkSession.builder()
                 .ward(user)
@@ -79,7 +79,6 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
                 .destinationAddress(destinationAddress)
                 .expectedArrival(expectedArrival)
                 .timerEnd(timerEnd)
-                .startedAt(startedAt)
                 .endedAt(endedAt)
                 .safeWalkStatus(status)
                 .build();
