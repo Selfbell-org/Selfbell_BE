@@ -6,14 +6,17 @@ import com.selfbell.device.repository.DeviceRepository;
 import com.selfbell.global.error.ApiException;
 import com.selfbell.global.error.ErrorCode;
 import com.selfbell.user.domain.User;
+import com.selfbell.user.dto.UserPhoneResponse;
 import com.selfbell.user.dto.UserSignUpRequestDTO;
 import com.selfbell.user.exception.UserNotFoundException;
 import com.selfbell.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -54,6 +57,12 @@ public class UserService {
         }
 
         return user;
+    }
+
+    @Transactional(readOnly = true)
+    public UserPhoneResponse getUserByPhoneNumber(String phoneNumber) {
+        boolean hasUser = userRepository.existsByPhoneNumber(phoneNumber);
+        return new UserPhoneResponse(hasUser);
     }
 
     private void validateDuplicatePhoneNumber(String phoneNumber) {
