@@ -34,4 +34,14 @@ public class Address extends BaseTimeEntity {
 
     @Column(nullable = false)
     private BigDecimal lon;
+
+    public static Address create(User user, String name, String address, BigDecimal lat, BigDecimal lon) {
+        return Address.builder()
+                .user(user)
+                .name(name)
+                .address(address)
+                .lat(lat)
+                .lon(lon)
+                .build();
+    }
 }
