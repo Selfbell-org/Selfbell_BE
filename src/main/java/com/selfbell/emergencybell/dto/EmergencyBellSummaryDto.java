@@ -13,11 +13,11 @@ import java.math.BigDecimal;
 @JsonInclude(JsonInclude.Include.NON_NULL) //null 필드는 JSON에서 제외(= 상세정보에서 distance 빠짐)
 public class EmergencyBellSummaryDto {
 
-    @JsonProperty("lon")
-    private BigDecimal lon;
-
     @JsonProperty("lat")
     private BigDecimal lat;
+
+    @JsonProperty("lon")
+    private BigDecimal lon;
 
     @JsonProperty("ins_DETAIL")
     private String insDetail;
@@ -33,12 +33,6 @@ public class EmergencyBellSummaryDto {
 
     @JsonProperty("ins_TYPE")
     private String insType;
-
-    @JsonProperty("x")
-    private Double x;
-
-    @JsonProperty("y")
-    private Double y;
 
     @JsonProperty("distance")
     private Double distance; // 반경 조회시에만 세팅

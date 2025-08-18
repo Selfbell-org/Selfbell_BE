@@ -89,7 +89,7 @@ public class EmergencyBellService {
         return objectMapper.writeValueAsString(dto);
     }
 
-    /** 9개 필드 요약 데이터 반환 */
+    /** 9개 필드 요약 데이터 반환 (x,y 제거와 무관) */
     public List<EmergencyBellSummaryDto> getFilteredEmergencyBellData(int pageNo, int numOfRows) throws Exception {
         EmergencyBellXmlDto dto = getEmergencyBellData(pageNo, numOfRows);
         var items = (dto.getBody() != null && dto.getBody().getItems() != null)
@@ -106,16 +106,15 @@ public class EmergencyBellService {
                         .mngTel(item.getMNG_TEL())
                         .adres(item.getADRES())
                         .insType(item.getINS_TYPE())
-                        .x(item.getX())
-                        .y(item.getY())
                         .build())
                 .collect(Collectors.toList());
     }
 
-    /** 반경 내 검색 */
+    /** 반경 내 검색 (레포지토리 반환 컬럼에서 x,y 제거됨) */
     public List<EmergencyBellSummaryDto> findNearbyEmergencyBells(double userLat, double userLon, double radiusInMeters) {
         var raw = repository.findWithinRadiusRaw(userLat, userLon, radiusInMeters);
         return raw.stream().map(row -> {
+            // 새 인덱스: 0=id, 1=lat, 2=lon, 3=insDetail, 4=mngTel, 5=adres, 6=insType, 7=distance
             Long id = row[0] != null ? ((Number) row[0]).longValue() : null;
             BigDecimal latitude = row[1] != null ? new BigDecimal(row[1].toString()) : null;
             BigDecimal longitude = row[2] != null ? new BigDecimal(row[2].toString()) : null;
@@ -123,9 +122,7 @@ public class EmergencyBellService {
             String managementPhone = row[4] != null ? row[4].toString() : null;
             String lotNumberAddress = row[5] != null ? row[5].toString() : null;
             String installType = row[6] != null ? row[6].toString() : null;
-            Double coordX = row[7] != null ? ((Number) row[7]).doubleValue() : null;
-            Double coordY = row[8] != null ? ((Number) row[8]).doubleValue() : null;
-            Double distance = row[9] != null ? ((Number) row[9]).doubleValue() : null;
+            Double distance = row[7] != null ? ((Number) row[7]).doubleValue() : null;
 
             return EmergencyBellSummaryDto.builder()
                     .objtId(id)
@@ -135,8 +132,6 @@ public class EmergencyBellService {
                     .mngTel(managementPhone)
                     .adres(lotNumberAddress)
                     .insType(installType)
-                    .x(coordX)
-                    .y(coordY)
                     .distance(distance)
                     .build();
         }).collect(Collectors.toList());
@@ -154,8 +149,6 @@ public class EmergencyBellService {
                         .mngTel(e.getMng_TEL())
                         .adres(e.getAdres())
                         .insType(e.getIns_TYPE())
-                        .x(e.getX())
-                        .y(e.getY())
                         .build()
         );
     }
@@ -183,9 +176,7 @@ public class EmergencyBellService {
                     item.getINS_DETAIL(),
                     item.getMNG_TEL(),
                     item.getADRES(),
-                    item.getINS_TYPE(),
-                    item.getX(),
-                    item.getY()
+                    item.getINS_TYPE()
             );
             repository.save(entity);
         }
@@ -193,7 +184,7 @@ public class EmergencyBellService {
     }
 
     /** =========================
-     *  JDBC Batch Upsert (권장)
+     *  JDBC Batch Upsert (x,y 제거)
      *  ========================= */
     @Transactional
     public void bulkUpsertEmergencyBells(List<EmergencyBellXmlDto.Item> items) {
@@ -203,17 +194,15 @@ public class EmergencyBellService {
         }
 
         final String sql = "INSERT INTO emergency_bell " +
-                "(id, lon, lat, ins_DETAIL, mng_TEL, adres, ins_TYPE, x, y) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "(id, lon, lat, ins_DETAIL, mng_TEL, adres, ins_TYPE) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE " +
                 "lon = VALUES(lon), " +
                 "lat = VALUES(lat), " +
                 "ins_DETAIL = VALUES(ins_DETAIL), " +
                 "mng_TEL = VALUES(mng_TEL), " +
                 "adres = VALUES(adres), " +
-                "ins_TYPE = VALUES(ins_TYPE), " +
-                "x = VALUES(x), " +
-                "y = VALUES(y)";
+                "ins_TYPE = VALUES(ins_TYPE)";
 
         int batchSize = 1000;
         for (int start = 0; start < items.size(); start += batchSize) {
@@ -232,8 +221,6 @@ public class EmergencyBellService {
                     setNullableString(ps, 5, it.getMNG_TEL());
                     setNullableString(ps, 6, it.getADRES());
                     setNullableString(ps, 7, it.getINS_TYPE());
-                    setNullableDouble(ps, 8, it.getX());
-                    setNullableDouble(ps, 9, it.getY());
                 }
 
                 @Override
@@ -248,11 +235,6 @@ public class EmergencyBellService {
     private void setNullableString(PreparedStatement ps, int index, String value) throws SQLException {
         if (value == null) ps.setNull(index, Types.VARCHAR);
         else ps.setString(index, value);
-    }
-
-    private void setNullableDouble(PreparedStatement ps, int index, Double value) throws SQLException {
-        if (value == null) ps.setNull(index, Types.DOUBLE);
-        else ps.setDouble(index, value);
     }
 
     private void setNullableLong(PreparedStatement ps, int index, Long value) throws SQLException {
@@ -284,7 +266,7 @@ public class EmergencyBellService {
                     : new ArrayList<>();
             bulkUpsertEmergencyBells(items1);
 
-            // 3) 2..N 페이지 고정 루프 (페이지 단위 실패는 continue)
+            // 3) 2..N 페이지
             for (int p = 2; p <= pages; p++) {
                 try {
                     EmergencyBellXmlDto dto = getEmergencyBellData(p, fullSyncNumOfRows);

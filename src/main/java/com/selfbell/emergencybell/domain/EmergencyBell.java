@@ -49,16 +49,13 @@ public class EmergencyBell {
                                String insDetail,
                                String mngTel,
                                String adres,
-                               String insType,
-                               Double x,
-                               Double y) {
+                               String insType)
+    {
         this.lat = lat;
         this.lon = lon;
         this.ins_DETAIL = insDetail;
         this.mng_TEL = mngTel;
         this.adres = adres;
         this.ins_TYPE = insType;
-        this.x = x;
-        this.y = y;
     }
 }
