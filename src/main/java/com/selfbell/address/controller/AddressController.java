@@ -1,6 +1,7 @@
 package com.selfbell.address.controller;
 
 import com.selfbell.address.dto.AddressCreateRequest;
+import com.selfbell.address.dto.AddressListResponse;
 import com.selfbell.address.dto.AddressUpdateRequest;
 import com.selfbell.address.service.AddressService;
 import jakarta.validation.Valid;
@@ -36,5 +37,12 @@ public class AddressController {
         Long userId = currentUserId();
         addressService.update(userId, addressId, request);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<AddressListResponse> getAddresses() {
+        Long userId = currentUserId();
+        AddressListResponse response = addressService.retrieveAll(userId);
+        return ResponseEntity.ok(response);
     }
 }
