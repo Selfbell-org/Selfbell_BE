@@ -7,6 +7,7 @@ import com.selfbell.address.dto.AddressResponse;
 import com.selfbell.address.dto.AddressUpdateRequest;
 import com.selfbell.address.exception.AddressNotFoundException;
 import com.selfbell.address.repository.AddressRepository;
+import com.selfbell.global.error.ErrorCode;
 import com.selfbell.user.domain.User;
 import com.selfbell.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.List;
 import static com.selfbell.global.error.ErrorCode.ADDRESS_NOT_FOUND;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AddressService {
 
@@ -26,7 +28,6 @@ public class AddressService {
 
     private final UserService userService;
 
-    @Transactional
     public Long create(Long userId, AddressCreateRequest request) {
         User user = userService.findByIdOrThrow(userId);
 
@@ -42,22 +43,14 @@ public class AddressService {
     }
 
     public void update(Long userId, Long addressId, AddressUpdateRequest request) {
-        User user = userService.findByIdOrThrow(userId);
         Address address = findByIdOrThrow(addressId);
-
-        if (!address.getUser().equals(user)) {
-            throw new AddressNotFoundException(ADDRESS_NOT_FOUND, "해당 주소는 사용자의 주소가 아닙니다.");
-        }
+        validatePermissionAddress(userId, address);
 
         Address updateAddress = request.applyTo(address);
 
         addressRepository.save(updateAddress);
     }
 
-    private Address findByIdOrThrow(Long addressId) {
-        return addressRepository.findById(addressId)
-                .orElseThrow(() -> new AddressNotFoundException(ADDRESS_NOT_FOUND, "해당 주소를 찾을 수 없습니다."));
-    }
 
     @Transactional(readOnly = true)
     public AddressListResponse retrieveAll(Long userId) {
@@ -66,5 +59,24 @@ public class AddressService {
                 .map(AddressResponse::from)
                 .toList();
         return AddressListResponse.of(responseList);
+    }
+
+    @Transactional(readOnly = true)
+    public AddressResponse retrieve(Long userId, Long addressId) {
+        Address address = findByIdOrThrow(addressId);
+        validatePermissionAddress(userId, address);
+
+        return AddressResponse.from(address);
+    }
+
+    private void validatePermissionAddress(Long userId, Address address) {
+        if (!address.getUser().getId().equals(userId)) {
+            throw new AddressNotFoundException(ErrorCode.ADDRESS_UNAUTHORIZED);
+        }
+    }
+
+    private Address findByIdOrThrow(Long addressId) {
+        return addressRepository.findById(addressId)
+                .orElseThrow(() -> new AddressNotFoundException(ADDRESS_NOT_FOUND, "해당 주소를 찾을 수 없습니다."));
     }
 }

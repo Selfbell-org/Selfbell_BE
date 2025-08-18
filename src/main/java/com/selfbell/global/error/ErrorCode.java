@@ -18,8 +18,8 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다."),
 
     // AddressNotFoundException 예외 처리에 사용되는 ErrorCode
-    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "해당 주소를 찾을 수 없습니다.");
-
+    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "해당 주소를 찾을 수 없습니다."),
+    ADDRESS_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "ADDRESS_UNAUTHORIZED", "주소에 대한 권한이 없습니다.");
 
     private final HttpStatus status;
     private final String code;

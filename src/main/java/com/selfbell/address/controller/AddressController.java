@@ -2,6 +2,7 @@ package com.selfbell.address.controller;
 
 import com.selfbell.address.dto.AddressCreateRequest;
 import com.selfbell.address.dto.AddressListResponse;
+import com.selfbell.address.dto.AddressResponse;
 import com.selfbell.address.dto.AddressUpdateRequest;
 import com.selfbell.address.service.AddressService;
 import jakarta.validation.Valid;
@@ -40,9 +41,18 @@ public class AddressController {
     }
 
     @GetMapping
-    public ResponseEntity<AddressListResponse> getAddresses() {
+    public ResponseEntity<AddressListResponse> retrieveAddresses() {
         Long userId = currentUserId();
         AddressListResponse response = addressService.retrieveAll(userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{addressId}")
+    public ResponseEntity<AddressResponse> retrieveAddress(
+            @PathVariable Long addressId
+    ){
+        Long userId = currentUserId();
+        AddressResponse response = addressService.retrieve(userId, addressId);
         return ResponseEntity.ok(response);
     }
 }
