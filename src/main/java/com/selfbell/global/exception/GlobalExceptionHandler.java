@@ -2,14 +2,12 @@ package com.selfbell.global.exception;
 
 import com.selfbell.global.dto.ErrorResponse;
 import com.selfbell.global.error.ApiException;
-import com.selfbell.global.error.ErrorCode;
 import com.selfbell.safewalk.exception.ActiveSessionExistsException;
 import com.selfbell.safewalk.exception.SessionAccessDeniedException;
 import com.selfbell.safewalk.exception.SessionNotActiveException;
 import com.selfbell.safewalk.exception.SessionNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 @ControllerAdvice
