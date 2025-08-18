@@ -13,5 +13,4 @@ public class SelfbellApplication {
     public static void main(String[] args) {
         SpringApplication.run(SelfbellApplication.class, args);
     }
-
 }

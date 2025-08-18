@@ -60,21 +60,21 @@ public class VWorldClient {
         Map<?, ?> point = asMap(result.get("point"));
         if (point == null) return Optional.empty();
 
-        BigDecimal lng = toBigDecimal(point.get("x"));
+        BigDecimal lon = toBigDecimal(point.get("x"));
         BigDecimal lat = toBigDecimal(point.get("y"));
-        if (lng == null || lat == null) return Optional.empty();
+        if (lon == null || lat == null) return Optional.empty();
 
-        return Optional.of(new LatLng(lat, lng));
+        return Optional.of(new LatLng(lat, lon));
     }
 
     /** 위/경도 → 행정구역(시/도, 시군구, 읍면동) */
-    public Optional<AdminRegion> reverseGeocode(double lat, double lng) {
+    public Optional<AdminRegion> reverseGeocode(double lat, double lon) {
         String url = UriComponentsBuilder.fromUriString("https://api.vworld.kr/req/address")
                 .queryParam("service", "address")
                 .queryParam("request", "getAddress")   // 역지오코딩
                 .queryParam("format", "json")
                 .queryParam("crs", "EPSG:4326")
-                .queryParam("point", lng + "," + lat)  // 경도,위도 순서
+                .queryParam("point", lon + "," + lat)  // 경도,위도 순서 (lon,lat)
                 .queryParam("type", "both")
                 .queryParam("key", vworldKey)
                 .build(false)
@@ -117,7 +117,7 @@ public class VWorldClient {
     }
 
     /** 좌표 레코드 */
-    public record LatLng(BigDecimal lat, BigDecimal lng) {}
+    public record LatLng(BigDecimal lat, BigDecimal lon) {}
     /** 역지오코딩 결과(행정구역) */
     public record AdminRegion(String ctpvNm, String sggNm, String umdNm) {}
 }
