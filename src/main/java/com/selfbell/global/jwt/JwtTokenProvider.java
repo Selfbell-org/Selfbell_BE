@@ -27,27 +27,25 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(decodedKey);
     }
 
-    public String createAccessToken(Long userId) {
-        return createToken(userId, ACCESS_TOKEN_VALIDITY);
+    public String createAccessToken(String phoneNumber) {
+        return createToken(phoneNumber, ACCESS_TOKEN_VALIDITY);
     }
 
-    public String createRefreshToken(Long userId) {
-        return createToken(userId, REFRESH_TOKEN_VALIDITY);
+    public String createRefreshToken(String phoneNumber) {
+        return createToken(phoneNumber, REFRESH_TOKEN_VALIDITY);
     }
 
-    private String createToken(Long userId, long validity) {
+    private String createToken(String phoneNumber, long validity) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + validity);
-
         return Jwts.builder()
-                .setSubject(userId.toString())
+                .setSubject(phoneNumber)        // ★ phoneNumber
                 .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setExpiration(new Date(now.getTime() + validity))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public Long getUserId(String token) {
+    public String getPhoneNumber(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -55,7 +53,7 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token)
                     .getBody();
 
-            return Long.parseLong(claims.getSubject());
+            return claims.getSubject(); // ✅ phoneNumber
         } catch (ExpiredJwtException e) {
             throw new RuntimeException("만료된 JWT입니다.", e);
         } catch (JwtException | IllegalArgumentException e) {
@@ -81,14 +79,5 @@ public class JwtTokenProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
-    }
-
-    public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.getSubject(); // userId 또는 username
     }
 }
