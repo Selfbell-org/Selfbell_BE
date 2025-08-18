@@ -7,8 +7,4 @@ public class AddressNotFoundException extends ApiException {
     public AddressNotFoundException(ErrorCode errorCode, String overrideMessage) {
         super(errorCode, overrideMessage);
     }
-
-    public AddressNotFoundException(ErrorCode errorCode) {
-        super(errorCode);
-    }
 }

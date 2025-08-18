@@ -6,6 +6,7 @@ import com.selfbell.address.dto.AddressListResponse;
 import com.selfbell.address.dto.AddressResponse;
 import com.selfbell.address.dto.AddressUpdateRequest;
 import com.selfbell.address.exception.AddressNotFoundException;
+import com.selfbell.address.exception.AddressUnauthorizedException;
 import com.selfbell.address.repository.AddressRepository;
 import com.selfbell.global.error.ErrorCode;
 import com.selfbell.user.domain.User;
@@ -79,7 +80,7 @@ public class AddressService {
 
     private void validatePermissionAddress(Long userId, Address address) {
         if (!address.getUser().getId().equals(userId)) {
-            throw new AddressNotFoundException(ErrorCode.ADDRESS_UNAUTHORIZED);
+            throw new AddressUnauthorizedException(ErrorCode.ADDRESS_UNAUTHORIZED);
         }
     }
 
