@@ -35,20 +35,18 @@ public class EmergencyBellService {
     @Value("${api.emergencybell.key}")
     private String serviceKey;
 
-    // 증분 동기화 범위
     @Value("${emergencybell.incremental.pages:5}")
     private int incrementalPages;
 
     @Value("${emergencybell.incremental.num-of-rows:100}")
     private int incrementalNumOfRows;
 
-    // 전체 동기화시 페이지당 건수
     @Value("${emergencybell.full-sync.num-of-rows:500}")
     private int fullSyncNumOfRows;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final XmlMapper xmlMapper;              // XmlMapperConfig에서 등록
+    private final XmlMapper xmlMapper;
     private final EmergencyBellRepository repository;
     private final JdbcTemplate jdbcTemplate;
 
@@ -71,7 +69,6 @@ public class EmergencyBellService {
             throw new RuntimeException("API 응답이 비어있습니다.");
         }
 
-        // XML 깨짐 방어
         String safeXml = sanitizeXml(xmlResponse);
 
         EmergencyBellXmlDto dto = xmlMapper.readValue(safeXml, EmergencyBellXmlDto.class);
@@ -89,7 +86,7 @@ public class EmergencyBellService {
         return objectMapper.writeValueAsString(dto);
     }
 
-    /** 9개 필드 요약 데이터 반환 (x,y 제거와 무관) */
+    /** 9개 필드 요약 데이터 반환 */
     public List<EmergencyBellSummaryDto> getFilteredEmergencyBellData(int pageNo, int numOfRows) throws Exception {
         EmergencyBellXmlDto dto = getEmergencyBellData(pageNo, numOfRows);
         var items = (dto.getBody() != null && dto.getBody().getItems() != null)
@@ -110,18 +107,19 @@ public class EmergencyBellService {
                 .collect(Collectors.toList());
     }
 
-    /** 반경 내 검색 (레포지토리 반환 컬럼에서 x,y 제거됨) */
+    /**
+     * 반경 내 검색
+     * - 기존 Repository 결과를 사용하되,
+     * - DTO에는 objt_ID, lat, lon, ins_DETAIL, distance만 채움(나머지는 null → JSON 미포함)
+     */
     public List<EmergencyBellSummaryDto> findNearbyEmergencyBells(double userLat, double userLon, double radiusInMeters) {
         var raw = repository.findWithinRadiusRaw(userLat, userLon, radiusInMeters);
+        // 인덱스: 0=id, 1=lat, 2=lon, 3=insDetail, 4=mngTel, 5=adres, 6=insType, 7=distance
         return raw.stream().map(row -> {
-            // 새 인덱스: 0=id, 1=lat, 2=lon, 3=insDetail, 4=mngTel, 5=adres, 6=insType, 7=distance
             Long id = row[0] != null ? ((Number) row[0]).longValue() : null;
             BigDecimal latitude = row[1] != null ? new BigDecimal(row[1].toString()) : null;
             BigDecimal longitude = row[2] != null ? new BigDecimal(row[2].toString()) : null;
             String installDetail = row[3] != null ? row[3].toString() : null;
-            String managementPhone = row[4] != null ? row[4].toString() : null;
-            String lotNumberAddress = row[5] != null ? row[5].toString() : null;
-            String installType = row[6] != null ? row[6].toString() : null;
             Double distance = row[7] != null ? ((Number) row[7]).doubleValue() : null;
 
             return EmergencyBellSummaryDto.builder()
@@ -129,15 +127,13 @@ public class EmergencyBellService {
                     .lat(latitude)
                     .lon(longitude)
                     .insDetail(installDetail)
-                    .mngTel(managementPhone)
-                    .adres(lotNumberAddress)
-                    .insType(installType)
                     .distance(distance)
+                    // mngTel/addr/insType은 설정하지 않음 → null → 응답에서 제외
                     .build();
         }).collect(Collectors.toList());
     }
 
-    //각 비상벨 상세조회 기능
+    // 상세조회: 풀 정보
     @Transactional(readOnly = true)
     public Optional<EmergencyBellSummaryDto> getEmergencyBellDetail(Long id) {
         return repository.findById(id).map(e ->
@@ -153,7 +149,7 @@ public class EmergencyBellService {
         );
     }
 
-    /** JPA 기반 Upsert (느리지만 간단) */
+    /** JPA 기반 Upsert */
     @Transactional
     public void saveOrUpdateEmergencyBellsJpa(List<EmergencyBellXmlDto.Item> items) {
         if (items == null || items.isEmpty()) {
@@ -247,10 +243,9 @@ public class EmergencyBellService {
         else ps.setBigDecimal(index, value);
     }
 
-    /** 전체 페이지 순회 + JDBC Batch Upsert (안정화) */
+    /** 전체 페이지 순회 + JDBC Batch Upsert */
     public void fullSyncBulk() {
         try {
-            // 1) 첫 페이지로 totalCount 확보
             EmergencyBellXmlDto first = getEmergencyBellData(1, fullSyncNumOfRows);
             int total = (first.getBody() != null) ? first.getBody().getTotalCount() : 0;
             if (total <= 0) {
@@ -260,13 +255,11 @@ public class EmergencyBellService {
             int pages = (int) Math.ceil((double) total / fullSyncNumOfRows);
             log.info("전체 동기화 시작: totalCount={}, pages={}, numOfRows={}", total, pages, fullSyncNumOfRows);
 
-            // 2) 1페이지 처리
             List<EmergencyBellXmlDto.Item> items1 = (first.getBody() != null && first.getBody().getItems() != null)
                     ? first.getBody().getItems().getItem()
                     : new ArrayList<>();
             bulkUpsertEmergencyBells(items1);
 
-            // 3) 2..N 페이지
             for (int p = 2; p <= pages; p++) {
                 try {
                     EmergencyBellXmlDto dto = getEmergencyBellData(p, fullSyncNumOfRows);
@@ -277,16 +270,12 @@ public class EmergencyBellService {
 
                     bulkUpsertEmergencyBells(items);
                     log.info("전체 동기화 진행: page={}/{}", p, pages);
-
-                    // 속도 제한 방지
                     Thread.sleep(120L);
                 } catch (Exception pageEx) {
                     log.error("페이지 {} 처리 중 오류. 건너뜀: {}", p, pageEx.getMessage(), pageEx);
                 }
             }
-
             log.info("전체 동기화 완료 (JDBC batch upsert)");
-
         } catch (Exception e) {
             log.error("전체 동기화 실패: {}", e.getMessage(), e);
             throw new RuntimeException("전체 동기화 실패: " + e.getMessage(), e);
@@ -304,7 +293,6 @@ public class EmergencyBellService {
                         : new ArrayList<EmergencyBellXmlDto.Item>();
                 bulkUpsertEmergencyBells(items);
                 log.info("증분 동기화 완료 - page {}", page);
-
                 Thread.sleep(80L);
             } catch (Exception e) {
                 log.error("증분 동기화 페이지 {} 처리 실패: {}", page, e.getMessage(), e);
@@ -317,11 +305,8 @@ public class EmergencyBellService {
     private String sanitizeXml(String xml) {
         if (xml == null) return "";
         String s = xml
-                // DOCTYPE 제거
                 .replaceAll("(?is)<!DOCTYPE[^>]*>", "")
-                // 표준 엔티티/문자 참조를 제외한 잘못된 '&' 치환
                 .replaceAll("&(?!amp;|lt;|gt;|quot;|apos;|#[0-9]+;|#x[0-9a-fA-F]+;)", "&amp;");
-        // BOM/컨트롤문자 방지
         s = new String(s.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
         return s;
     }

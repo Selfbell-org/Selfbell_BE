@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL) //null 필드는 JSON에서 제외(= 상세정보에서 distance 빠짐)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmergencyBellSummaryDto {
 
     @JsonProperty("lat")
