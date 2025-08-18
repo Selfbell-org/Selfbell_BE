@@ -1,18 +1,15 @@
-// ContactController
 package com.selfbell.contact.controller;
 
 import com.selfbell.contact.dto.*;
 import com.selfbell.contact.service.ContactService;
-import com.selfbell.global.error.ApiException;
-import com.selfbell.global.error.ErrorCode;
-import com.selfbell.user.domain.User;
 import com.selfbell.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import static com.selfbell.global.jwt.JwtTokenProvider.currentUserId;
 
 @RestController
 @RequestMapping("/api/v1/contacts")
@@ -20,19 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class ContactController {
 
     private final ContactService contactService;
-    private final UserRepository userRepository; // ★ 추가
-
-    // JWT subject = phoneNumber 를 ID로 변환
-    private Long currentUserId() {
-        var a = SecurityContextHolder.getContext().getAuthentication();
-        if (a == null || !a.isAuthenticated() || "anonymousUser".equals(String.valueOf(a.getPrincipal()))) {
-            throw new ApiException(ErrorCode.UNAUTHORIZED, "인증이 필요합니다.");
-        }
-        String phone = a.getName(); // JWT subject = phoneNumber
-        User me = userRepository.findByPhoneNumber(phone)
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
-        return me.getId(); // ★ 여기서 ID로 변환
-    }
+    private final UserRepository userRepository;
 
     @PostMapping("/requests")
     public ResponseEntity<ContactCreateResponseDTO> createRequest(@RequestBody @Valid ContactRequestCreateDTO request) {

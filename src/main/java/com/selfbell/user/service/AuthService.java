@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -32,9 +31,9 @@ public class AuthService {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
         }
 
-        // ★ phoneNumber를 subject로 발급
-        String accessToken = jwtTokenProvider.createAccessToken(phoneNumber);
-        String refreshToken = jwtTokenProvider.createRefreshToken(phoneNumber);
+        // ✅ userId로 토큰 발급
+        String accessToken = jwtTokenProvider.createAccessToken(user.getId());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
         return new LoginResponseDTO(accessToken, refreshToken);
     }

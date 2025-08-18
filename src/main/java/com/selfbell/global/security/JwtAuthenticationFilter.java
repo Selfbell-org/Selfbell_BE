@@ -1,15 +1,16 @@
 package com.selfbell.global.security;
 
 import com.selfbell.global.jwt.JwtTokenProvider;
+import com.selfbell.user.domain.User;
+import com.selfbell.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,7 +21,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -37,29 +38,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-            String header = request.getHeader("Authorization");
-            if (header == null || !header.startsWith("Bearer ")) {
+            String token = jwtTokenProvider.resolveToken(request);
+            if (token == null || !jwtTokenProvider.validateToken(token)) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            String token = header.substring(7);
-            if (!jwtTokenProvider.validateToken(token)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+            Long userId = jwtTokenProvider.getUserId(token);
 
-            // ✅ subject = phoneNumber
-            String phoneNumber = jwtTokenProvider.getPhoneNumber(token);
+            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                User user = userRepository.findById(userId).orElse(null);
+                if (user != null) {
+                    var authorities =
+                            AuthorityUtils.createAuthorityList("ROLE_" + user.getRole().name());
 
-            if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(phoneNumber);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    String.valueOf(user.getId()),
+                                    null,
+                                    authorities
+                            );
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);

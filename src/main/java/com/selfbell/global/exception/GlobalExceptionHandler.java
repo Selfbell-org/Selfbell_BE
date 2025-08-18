@@ -42,15 +42,7 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of("INVALID_ARGUMENT", e.getMessage());
         return ResponseEntity.badRequest().body(error);
     }
-/*
-    @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponse> handleApiException(ApiException e) {
-        ErrorCode code = e.getErrorCode();
-        return ResponseEntity
-                .status(code.getStatus())
-                .body(ErrorResponse.of(code.getCode(), e.getMessage()));
-    }
-*/
+
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApi(ApiException e) {
         var ec = e.getErrorCode();
