@@ -1,5 +1,6 @@
 package com.selfbell.global.error;
 
+import com.selfbell.global.dto.ErrorResponse;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
@@ -13,7 +14,9 @@ public enum ErrorCode {
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "INVALID_INPUT", "유효하지 않은 입력입니다."),
     CONTACT_NOT_FOUND(HttpStatus.NOT_FOUND, "CONTACT_NOT_FOUND", "해당 연락처 관계를 찾을 수 없습니다."),
     INVALID_STATUS_FILTER(HttpStatus.BAD_REQUEST, "INVALID_STATUS_FILTER", "status는 PENDING 또는 ACCEPTED만 허용됩니다."),
-    SHARE_CHANGE_NOT_ALLOWED(HttpStatus.CONFLICT, "SHARE_CHANGE_NOT_ALLOWED", "ACCEPTED 상태에서만 공유 권한을 변경할 수 있습니다.");
+    SHARE_CHANGE_NOT_ALLOWED(HttpStatus.CONFLICT, "SHARE_CHANGE_NOT_ALLOWED", "ACCEPTED 상태에서만 공유 권한을 변경할 수 있습니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다.");
+
 
     private final HttpStatus status;
     private final String code;
@@ -23,5 +26,15 @@ public enum ErrorCode {
         this.status = status;
         this.code = code;
         this.defaultMessage = defaultMessage;
+    }
+
+    // 헬퍼: 기본 메시지로 ErrorResponse 만들기
+    public ErrorResponse toResponse() {
+        return ErrorResponse.of(this.code, this.defaultMessage);
+    }
+
+    // 헬퍼: 커스텀 메시지로 ErrorResponse 만들기
+    public ErrorResponse toResponse(String overrideMessage) {
+        return ErrorResponse.of(this.code, overrideMessage);
     }
 }

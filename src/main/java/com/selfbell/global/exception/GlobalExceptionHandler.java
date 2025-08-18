@@ -1,12 +1,15 @@
 package com.selfbell.global.exception;
 
 import com.selfbell.global.dto.ErrorResponse;
+import com.selfbell.global.error.ApiException;
+import com.selfbell.global.error.ErrorCode;
 import com.selfbell.safewalk.exception.ActiveSessionExistsException;
 import com.selfbell.safewalk.exception.SessionAccessDeniedException;
 import com.selfbell.safewalk.exception.SessionNotActiveException;
 import com.selfbell.safewalk.exception.SessionNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 @ControllerAdvice
@@ -41,9 +44,19 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.of("INVALID_ARGUMENT", e.getMessage());
         return ResponseEntity.badRequest().body(error);
     }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+/*
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiException(ApiException e) {
+        ErrorCode code = e.getErrorCode();
+        return ResponseEntity
+                .status(code.getStatus())
+                .body(ErrorResponse.of(code.getCode(), e.getMessage()));
+    }
+*/
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApi(ApiException e) {
+        var ec = e.getErrorCode();
+        var body = ErrorResponse.of(ec.getCode(), e.getMessage());
+        return ResponseEntity.status(ec.getStatus()).body(body);
     }
 }
