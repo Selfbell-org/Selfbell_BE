@@ -60,7 +60,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPhoneResponse getUserByPhoneNumber(String phoneNumber) {
+    public UserPhoneResponse checkUserByPhoneNumber(String phoneNumber) {
         boolean hasUser = userRepository.existsByPhoneNumber(phoneNumber);
         return new UserPhoneResponse(hasUser);
     }

@@ -17,10 +17,10 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<UserPhoneResponse> getAllUsers(
+    public ResponseEntity<UserPhoneResponse> checkUserByPhoneNumber(
             @RequestParam String phoneNumber
     ) {
-        UserPhoneResponse response = userService.getUserByPhoneNumber(phoneNumber);
+        UserPhoneResponse response = userService.checkUserByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(response);
     }
 }
