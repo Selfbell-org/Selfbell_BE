@@ -1,7 +1,10 @@
 package com.selfbell.user.service;
 
 import com.selfbell.device.domain.Device;
+import com.selfbell.device.domain.enums.DeviceType;
 import com.selfbell.device.repository.DeviceRepository;
+import com.selfbell.global.error.ApiException;
+import com.selfbell.global.error.ErrorCode;
 import com.selfbell.user.domain.User;
 import com.selfbell.user.dto.UserSignUpRequestDTO;
 import com.selfbell.user.exception.UserNotFoundException;
@@ -23,23 +26,39 @@ public class UserService {
     public User createUser(UserSignUpRequestDTO request) {
         validateDuplicatePhoneNumber(request.getPhoneNumber());
 
+        // 1) 유저 저장
         String hashedPassword = passwordEncoder.encode(request.getPassword());
         User user = request.toUser(hashedPassword);
         userRepository.save(user);
 
-        Device device = Device.builder()
-                .user(user)
-                .deviceToken(request.getDeviceToken())
-                .deviceType(request.toDeviceType())
-                .build();
-        deviceRepository.save(device);
+        // 2) 디바이스 정보 처리 (둘 다 있으면 저장, 하나만 있으면 400)
+        boolean hasToken = request.getDeviceToken() != null && !request.getDeviceToken().isBlank();
+        DeviceType type = request.toDeviceTypeOrNull(); // null 허용 + 값 검증은 DTO에서
+
+        boolean hasType = (type != null);
+        if (hasToken ^ hasType) {
+            // 하나만 온 경우
+            throw new ApiException(
+                    ErrorCode.INVALID_INPUT,
+                    "deviceToken과 deviceType은 함께 제공되어야 합니다."
+            );
+        }
+
+        if (hasToken) {
+            Device device = Device.builder()
+                    .user(user)
+                    .deviceToken(request.getDeviceToken())
+                    .deviceType(type)
+                    .build();
+            deviceRepository.save(device);
+        }
 
         return user;
     }
 
     private void validateDuplicatePhoneNumber(String phoneNumber) {
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
-            throw new IllegalArgumentException("이미 등록된 전화번호입니다.");
+            throw new ApiException(ErrorCode.INVALID_INPUT, "이미 등록된 전화번호입니다.");
         }
     }
 
@@ -48,4 +67,3 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
     }
 }
-
