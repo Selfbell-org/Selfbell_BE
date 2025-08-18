@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class CriminalApiService {
 
     @Value("${api.criminal.key}")
-    private String serviceKeyEncoded; // 인코딩된 키 그대로 사용
+    private String serviceKeyEncoded;
 
     private final RestTemplate restTemplate;
     private final VWorldClient vworldClient;
@@ -75,7 +75,7 @@ public class CriminalApiService {
                 .collect(Collectors.toList());
     }
 
-    /** 최종: 위도/경도/반경을 받아 반경 내 결과(거리 포함)를 반환 */
+    /** 위도/경도/반경을 받아 반경 내 결과(거리 포함)를 반환 */
     public List<CriminalCoordDto> getNearbyCoords(double lat, double lng, int radiusMeters) throws Exception {
         // 1) 역지오코딩으로 시/구 추출(없으면 빈 리스트 반환)
         var regionOpt = vworldClient.reverseGeocode(lat, lng);
