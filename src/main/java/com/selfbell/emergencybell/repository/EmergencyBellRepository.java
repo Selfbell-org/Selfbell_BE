@@ -9,15 +9,22 @@ import java.util.List;
 
 public interface EmergencyBellRepository extends JpaRepository<EmergencyBell, Long> {
 
-    @Query(value = "SELECT * FROM (" +
-            "SELECT e.id, e.lat, e.lon, e.ins_DETAIL, e.mng_TEL, e.adres, e.ins_TYPE, e.x, e.y, " +
-            "(6371000 * acos(cos(radians(:userLat)) * cos(radians(e.lat)) * cos(radians(e.lon) - radians(:userLon)) + sin(radians(:userLat)) * sin(radians(e.lat)))) AS distance " +
-            "FROM emergency_bell e " +
-            ") AS distances " +
-            "WHERE distance <= :radiusInMeters " +
-            "ORDER BY distance", nativeQuery = true)
+    // 근처 조회 (여러 컬럼을 반환하지만 /nearby에서는 필요한 5개만 사용)
+    @Query(value = """
+        SELECT 
+            eb.id,
+            eb.lat,
+            eb.lon,
+            eb.ins_DETAIL,
+            eb.mng_TEL,
+            eb.adres,
+            eb.ins_TYPE,
+            ST_Distance_Sphere(POINT(:userLon, :userLat), POINT(eb.lon, eb.lat)) AS distance
+        FROM emergency_bell eb
+        WHERE ST_Distance_Sphere(POINT(:userLon, :userLat), POINT(eb.lon, eb.lat)) <= :radius
+        ORDER BY distance ASC
+        """, nativeQuery = true)
     List<Object[]> findWithinRadiusRaw(@Param("userLat") double userLat,
                                        @Param("userLon") double userLon,
-                                       @Param("radiusInMeters") double radiusInMeters);
+                                       @Param("radius") double radiusInMeters);
 }
-
