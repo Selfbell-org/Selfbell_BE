@@ -24,14 +24,14 @@ public class Address extends BaseTimeEntity {
     private User user;
 
     @Column(name = "name", nullable = false, length = 100)
-    private String name;  // 이름 (예: 집, 회사)
+    private String name;
 
     @Column(name = "address", nullable = false, length = 100)
     private String address;
 
     @Column(nullable = false)
-    private BigDecimal latitude; // 위도
+    private BigDecimal lat;
 
     @Column(nullable = false)
-    private BigDecimal longitude; // 경도
+    private BigDecimal lon;
 }
