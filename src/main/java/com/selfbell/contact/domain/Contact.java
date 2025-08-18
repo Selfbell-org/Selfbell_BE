@@ -1,6 +1,5 @@
 package com.selfbell.contact.domain;
 
-import com.selfbell.contact.domain.enums.Relation;
 import com.selfbell.contact.domain.enums.Status;
 import com.selfbell.global.entity.BaseTimeEntity;
 import com.selfbell.user.domain.User;
