@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class Address extends BaseTimeEntity {
 
     @Id

@@ -15,7 +15,10 @@ public enum ErrorCode {
     CONTACT_NOT_FOUND(HttpStatus.NOT_FOUND, "CONTACT_NOT_FOUND", "해당 연락처 관계를 찾을 수 없습니다."),
     INVALID_STATUS_FILTER(HttpStatus.BAD_REQUEST, "INVALID_STATUS_FILTER", "status는 PENDING 또는 ACCEPTED만 허용됩니다."),
     SHARE_CHANGE_NOT_ALLOWED(HttpStatus.CONFLICT, "SHARE_CHANGE_NOT_ALLOWED", "ACCEPTED 상태에서만 공유 권한을 변경할 수 있습니다."),
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다.");
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다."),
+
+    // AddressNotFoundException 예외 처리에 사용되는 ErrorCode
+    ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "해당 주소를 찾을 수 없습니다.");
 
 
     private final HttpStatus status;
