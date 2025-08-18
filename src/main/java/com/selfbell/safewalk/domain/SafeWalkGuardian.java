@@ -10,7 +10,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(
     name = "safe_walk_guardian",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uq_swg_session_guardian", columnNames = {"session_id", "guardian_user_id"})
+        @UniqueConstraint(name = "uq_swg_session_guardian", columnNames = {"session_id", "guardian_id"})
     }
 )
 @Getter
