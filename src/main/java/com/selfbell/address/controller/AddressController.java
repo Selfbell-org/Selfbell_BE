@@ -55,4 +55,13 @@ public class AddressController {
         AddressResponse response = addressService.retrieve(userId, addressId);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{addressId}")
+    public ResponseEntity<Void> deleteAddress(
+            @PathVariable Long addressId
+    ){
+        Long userId = currentUserId();
+        addressService.delete(userId, addressId);
+        return ResponseEntity.noContent().build();
+    }
 }

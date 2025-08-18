@@ -69,6 +69,14 @@ public class AddressService {
         return AddressResponse.from(address);
     }
 
+
+    public void delete(Long userId, Long addressId) {
+        Address address = findByIdOrThrow(addressId);
+        validatePermissionAddress(userId, address);
+
+        addressRepository.delete(address);
+    }
+
     private void validatePermissionAddress(Long userId, Address address) {
         if (!address.getUser().getId().equals(userId)) {
             throw new AddressNotFoundException(ErrorCode.ADDRESS_UNAUTHORIZED);
