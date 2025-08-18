@@ -2,7 +2,6 @@ package com.selfbell.contact.controller;
 
 import com.selfbell.contact.dto.*;
 import com.selfbell.contact.service.ContactService;
-import com.selfbell.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -17,7 +16,6 @@ import static com.selfbell.global.jwt.JwtTokenProvider.currentUserId;
 public class ContactController {
 
     private final ContactService contactService;
-    private final UserRepository userRepository;
 
     @PostMapping("/requests")
     public ResponseEntity<ContactCreateResponseDTO> createRequest(@RequestBody @Valid ContactRequestCreateDTO request) {
