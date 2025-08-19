@@ -6,6 +6,7 @@ import com.selfbell.device.repository.DeviceRepository;
 import com.selfbell.global.error.ApiException;
 import com.selfbell.global.error.ErrorCode;
 import com.selfbell.user.domain.User;
+import com.selfbell.user.dto.UserInfo;
 import com.selfbell.user.dto.UserPhoneResponse;
 import com.selfbell.user.dto.UserSignUpRequestDTO;
 import com.selfbell.user.exception.UserNotFoundException;
@@ -63,6 +64,12 @@ public class UserService {
     public UserPhoneResponse checkUserByPhoneNumber(String phoneNumber) {
         boolean hasUser = userRepository.existsByPhoneNumber(phoneNumber);
         return new UserPhoneResponse(hasUser);
+    }
+
+    @Transactional(readOnly = true)
+    public UserInfo getUserInfo(Long userId) {
+        User user = findByIdOrThrow(userId);
+        return UserInfo.from(user);
     }
 
     private void validateDuplicatePhoneNumber(String phoneNumber) {
