@@ -1,12 +1,10 @@
 package com.selfbell.safewalk.service;
 
-import com.selfbell.global.error.ApiException;
-import com.selfbell.global.error.ErrorCode;
 import com.selfbell.safewalk.domain.GeoPoint;
+import com.selfbell.safewalk.domain.SafeWalkGuardian;
 import com.selfbell.safewalk.domain.SafeWalkSession;
 import com.selfbell.safewalk.domain.enums.SafeWalkStatus;
 import com.selfbell.safewalk.dto.*;
-import com.selfbell.safewalk.domain.SafeWalkGuardian;
 import com.selfbell.safewalk.exception.ActiveSessionExistsException;
 import com.selfbell.safewalk.exception.SessionAccessDeniedException;
 import com.selfbell.safewalk.exception.SessionNotActiveException;

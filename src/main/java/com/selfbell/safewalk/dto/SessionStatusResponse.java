@@ -16,12 +16,4 @@ public record SessionStatusResponse(
                 .topic("/topic/safe-walk/" + safeWalkSession.getId())
                 .build();
     }
-
-    public static SessionStatusResponse noActiveSession() {
-        return SessionStatusResponse.builder()
-                .sessionId(null)
-                .status("NONE")
-                .topic(null)
-                .build();
-    }
 }
