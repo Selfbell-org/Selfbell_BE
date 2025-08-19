@@ -29,5 +29,6 @@ public class User extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-    private Role role;
+    @Builder.Default
+    private Role role = Role.USER;
 }

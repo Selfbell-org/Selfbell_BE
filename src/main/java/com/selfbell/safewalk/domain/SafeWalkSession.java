@@ -59,13 +59,37 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-    private SafeWalkStatus status;
+    private SafeWalkStatus safeWalkStatus;
 
-    @Version
-    @Column(nullable = false)
-    private Long version = 0L;
+//    @Version
+//    @Column(nullable = false)
+//    private Long version = 0L;
+
+    public static SafeWalkSession createSession(
+            User user, GeoPoint origin, String originAddress,
+            GeoPoint destination, String destinationAddress,
+            LocalDateTime expectedArrival, LocalDateTime timerEnd,
+            LocalDateTime endedAt, SafeWalkStatus status
+    ) {
+        return SafeWalkSession.builder()
+                .ward(user)
+                .origin(origin)
+                .originAddress(originAddress)
+                .destination(destination)
+                .destinationAddress(destinationAddress)
+                .expectedArrival(expectedArrival)
+                .timerEnd(timerEnd)
+                .endedAt(endedAt)
+                .safeWalkStatus(status)
+                .build();
+    }
 
     public boolean isActive() {
-        return status == SafeWalkStatus.IN_PROGRESS && endedAt == null;
+        return safeWalkStatus == SafeWalkStatus.IN_PROGRESS && endedAt == null;
+    }
+
+    public void endSession(){
+        this.endedAt = LocalDateTime.now();
+        this.safeWalkStatus = SafeWalkStatus.MANUAL_END;
     }
 }

@@ -6,7 +6,6 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -33,9 +32,22 @@ public class SafeWalkTrack extends BaseTimeEntity {
     })
     private GeoPoint point;
 
-    @Column(name = "accuracy_m", precision = 6, scale = 2)
-    private BigDecimal accuracyM;
+    @Column(name = "accuracy_m")
+    private Double accuracyM;
 
     @Column(name = "captured_at", nullable = false)
     private LocalDateTime capturedAt; // 단말 시각
+
+    public static SafeWalkTrack createTrack(
+            SafeWalkSession session,
+            GeoPoint point,
+            Double accuracyM,
+            LocalDateTime capturedAt) {
+        return SafeWalkTrack.builder()
+                .session(session)
+                .point(point)
+                .accuracyM(accuracyM)
+                .capturedAt(capturedAt)
+                .build();
+    }
 }

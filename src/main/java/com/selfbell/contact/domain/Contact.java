@@ -38,4 +38,12 @@ public class Contact extends BaseTimeEntity {
 
     @Column(name = "share_permission", nullable = false)
     private boolean sharePermission;
+
+    public void accept() {
+        this.status = Status.ACCEPTED;
+    }
+
+    public void updateSharePermission(boolean allow) {
+        this.sharePermission = allow;
+    }
 }
