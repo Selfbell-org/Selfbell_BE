@@ -22,8 +22,11 @@ public class JwtTokenProvider {
 
     private Key key;
 
-    private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60;         // 1시간
-    private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24 * 14; // 14일
+    @Value("${jwt.access-token-validity}")
+    private long ACCESS_TOKEN_VALIDITY;
+
+    @Value("${jwt.refresh-token-validity}")
+    private long REFRESH_TOKEN_VALIDITY;
 
     @PostConstruct
     public void init() {
