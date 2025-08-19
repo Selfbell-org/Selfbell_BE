@@ -19,6 +19,11 @@ public record SessionResponse(
 
 ) {
     public static SessionResponse of(SafeWalkSession session, List<SafeWalkGuardian> guardians) {
+        List<UserResponse> guardianResponses = guardians.stream()
+                .map(SafeWalkGuardian::getGuardian)
+                .map(UserResponse::from)
+                .toList();
+
         return new SessionResponse(
                 session.getId(),
                 UserResponse.from(session.getWard()),
@@ -28,7 +33,7 @@ public record SessionResponse(
                 session.getStartedAt().toString(),
                 session.getExpectedArrival() != null ? session.getExpectedArrival().toString() : null,
                 session.getTimerEnd() != null ? session.getTimerEnd().toString() : null,
-                UserResponse.fromList(guardians)
+                guardianResponses
         );
     }
 }
