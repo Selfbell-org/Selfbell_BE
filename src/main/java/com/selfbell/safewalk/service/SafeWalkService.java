@@ -1,10 +1,10 @@
 package com.selfbell.safewalk.service;
 
 import com.selfbell.safewalk.domain.GeoPoint;
+import com.selfbell.safewalk.domain.SafeWalkGuardian;
 import com.selfbell.safewalk.domain.SafeWalkSession;
 import com.selfbell.safewalk.domain.enums.SafeWalkStatus;
 import com.selfbell.safewalk.dto.*;
-import com.selfbell.safewalk.domain.SafeWalkGuardian;
 import com.selfbell.safewalk.exception.ActiveSessionExistsException;
 import com.selfbell.safewalk.exception.SessionAccessDeniedException;
 import com.selfbell.safewalk.exception.SessionNotActiveException;
@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.selfbell.safewalk.domain.SafeWalkGuardian.createGuardian;
 
@@ -77,6 +78,7 @@ public class SafeWalkService {
         return SessionEndResponse.of(session);
     }
 
+    @Transactional(readOnly = true)
     public SessionResponse getSession(
             final Long userId,
             final Long sessionId
@@ -87,6 +89,12 @@ public class SafeWalkService {
 
         final List<SafeWalkGuardian> guardians = safeWalkGuardianRepository.findBySessionId(sessionId);
         return SessionResponse.of(session, guardians);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<SessionStatusResponse> getCurrentStatus(Long userId) {
+        return safeWalkSessionRepository.findByWardIdAndSafeWalkStatus(userId, SafeWalkStatus.IN_PROGRESS)
+                .map(SessionStatusResponse::from);
     }
 
     private void validateNoActiveSession(User ward) {
