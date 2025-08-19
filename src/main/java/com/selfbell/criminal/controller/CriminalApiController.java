@@ -58,7 +58,7 @@ public class CriminalApiController {
 
         int effectiveRadius = radius;
         if (effectiveRadius > 1000) {
-            log.error("[CriminalApiController] 반경 초과 입력: {}m (허용 최대: 1000m). 1000m로 조정합니다.", effectiveRadius);
+            log.error("반경 초과 입력: {}m, 최대 반경 1000m로 자동 조정합니다.", effectiveRadius);
             effectiveRadius = 1000;
         }
 

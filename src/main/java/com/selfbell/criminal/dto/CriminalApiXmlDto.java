@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@JacksonXmlRootElement(localName = "response") // XML 루트 태그 매핑
+@JacksonXmlRootElement(localName = "response")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @NoArgsConstructor
