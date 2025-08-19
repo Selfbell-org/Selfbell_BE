@@ -14,10 +14,10 @@ import java.math.BigDecimal;
 public class EmergencyBellSummaryDto {
 
     @JsonProperty("lat")
-    private BigDecimal lat;
+    private double lat;
 
     @JsonProperty("lon")
-    private BigDecimal lon;
+    private double lon;
 
     @JsonProperty("ins_DETAIL")
     private String insDetail;

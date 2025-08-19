@@ -49,7 +49,7 @@ public class CriminalApiService {
         return getCriminalDataJson(ctpvNm, sggNm, null);
     }
 
-    /** 시·구 전체를 지오코딩하여 좌표만 반환 (기존 유지) */
+    /** 시·구 전체를 지오코딩하여 좌표만 반환 */
     public List<CriminalCoordDto> getCriminalCoords(String ctpvNm, String sggNm) throws Exception {
         List<CriminalApiXmlDto.Item> items = fetchAllItemsOfSgg(ctpvNm, sggNm);
         Set<String> uniq = new LinkedHashSet<>();
@@ -69,9 +69,9 @@ public class CriminalApiService {
                     return vworldClient.geocodeParcel(addr)
                             .map(p -> CriminalCoordDto.builder()
                                     .address(addr)
-                                    .lat(p.lat())
-                                    .lon(p.lon())
-                                    .distanceMeters(0L)
+                                    .lat(p.lat().doubleValue())   // BigDecimal → Double
+                                    .lon(p.lon().doubleValue())   // BigDecimal → Double
+                                    .distanceMeters(0.0)          // 구 전체 조회는 거리 0.0으로 세팅
                                     .build())
                             .orElse(null);
                 })
@@ -87,7 +87,7 @@ public class CriminalApiService {
             log.warn("[CriminalAPI] 반경 클램핑: 입력={}m → 사용={}m (허용: 100~1000m)", radiusMeters, r);
         }
 
-        // 1) 원 둘레 샘플링 + 중심점 역지오코딩 → (시/구/동) 후보 수집 (경계 안전)
+        // 1) 원 둘레 샘플링 + 중심점 역지오코딩 → (시/구/동) 후보 수집
         var umdCandidates = discoverUmdsOnCircle(lat, lon, r);
         if (umdCandidates.isEmpty()) return List.of();
 
@@ -158,7 +158,7 @@ public class CriminalApiService {
     }
 
     /* =========================
-       ‘구 전체(모든 동)’ 페이지네이션 수집 (기존 유지)
+       ‘구 전체(모든 동)’ 페이지네이션 수집
        ========================= */
     private List<CriminalApiXmlDto.Item> fetchAllItemsOfSgg(String ctpvNm, String sggNm) throws Exception {
         final int PAGE_SIZE = 100;
@@ -193,10 +193,10 @@ public class CriminalApiService {
     }
 
     /* =========================
-       새로 추가: UMD(동) 단위 페이지네이션 수집
+       UMD(동) 단위 페이지네이션 수집
        ========================= */
     private List<CriminalApiXmlDto.Item> fetchItemsOfUmd(String ctpvNm, String sggNm, String umdNm) throws Exception {
-        final int PAGE_SIZE = 100; // 필요 시 200~500로 조정
+        final int PAGE_SIZE = 100;
         int pageNo = 1;
         int expectedTotal = Integer.MAX_VALUE;
         List<CriminalApiXmlDto.Item> acc = new ArrayList<>();
@@ -219,7 +219,7 @@ public class CriminalApiService {
 
             if (list.isEmpty()) break;
             pageNo++;
-            if (pageNo > 100) { // 안전 한도
+            if (pageNo > 100) {
                 log.warn("[CriminalAPI] (UMD) Page limit reached ({}). Stop fetching.", pageNo);
                 break;
             }
@@ -228,10 +228,10 @@ public class CriminalApiService {
     }
 
     /* =========================
-       새로 추가: 원 둘레 샘플링 기반 UMD 후보 수집 (경계 안전)
+       원 둘레 샘플링 기반 UMD 후보 수집 (경계 안전)
        ========================= */
     private List<VWorldClient.AdminRegion> discoverUmdsOnCircle(double lat, double lon, int radiusM) {
-        final int bearings = 16; // 반경<=1km 가정: 16개 방위각 샘플
+        final int bearings = 16; // 반경<=1km: 16개 방위각 샘플
         final int epsilon = Math.min(Math.max(radiusM / 6, 100), 250); // r/6 ~ 250m
         final double d = (radiusM + epsilon);
 
@@ -277,7 +277,7 @@ public class CriminalApiService {
     }
 
     /* =========================
-       새로 추가: 병렬 지오코딩 + 반경 필터 + 정렬
+       병렬 지오코딩 + 반경 필터 + 정렬
        ========================= */
     private List<CriminalCoordDto> geocodeAndFilter(
             List<CriminalApiXmlDto.Item> items, double lat, double lon, int radiusM, Set<String> uniq) {
@@ -298,13 +298,16 @@ public class CriminalApiService {
                         if (!uniq.add(addr)) return null;
 
                         return vworldClient.geocodeParcel(addr).map(p -> {
-                            double d = haversineMeters(lat, lon, p.lat().doubleValue(), p.lon().doubleValue());
+                            double latD = p.lat().doubleValue();  // BigDecimal → Double
+                            double lonD = p.lon().doubleValue();  // BigDecimal → Double
+                            double d = haversineMeters(lat, lon, latD, lonD);
                             if (d > radiusM) return null;
+
                             return CriminalCoordDto.builder()
                                     .address(addr)
-                                    .lat(p.lat())
-                                    .lon(p.lon())
-                                    .distanceMeters(Math.round(d))
+                                    .lat(latD)
+                                    .lon(lonD)
+                                    .distanceMeters(d)
                                     .build();
                         }).orElse(null);
                     }))
@@ -313,13 +316,13 @@ public class CriminalApiService {
             List<CriminalCoordDto> out = new ArrayList<>(futures.size());
             for (var f : futures) {
                 try {
-                    var r = f.get(); // RestTemplate 타임아웃이 걸려 있으므로 별도 타임아웃 없이도 안전
+                    var r = f.get(); // 개별 실패 무시
                     if (r != null) out.add(r);
                 } catch (Exception e) {
                     // 개별 주소 실패는 전체 실패로 보지 않음
                 }
             }
-            out.sort(Comparator.comparingLong(CriminalCoordDto::getDistanceMeters));
+            out.sort(Comparator.comparingDouble(CriminalCoordDto::getDistanceMeters)); // 거리 오름차순
             return out;
         } finally {
             pool.shutdown();

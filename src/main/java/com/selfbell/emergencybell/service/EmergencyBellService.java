@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.hibernate.type.descriptor.java.CoercionHelper.toDouble;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -96,8 +98,8 @@ public class EmergencyBellService {
         return items.stream()
                 .filter(i -> i.getOBJT_ID() != null)
                 .map(item -> EmergencyBellSummaryDto.builder()
-                        .lon(item.getLON())
-                        .lat(item.getLAT())
+                        .lon(toDouble(item.getLON()))
+                        .lat(toDouble(item.getLAT()))
                         .insDetail(item.getINS_DETAIL())
                         .objtId(item.getOBJT_ID())
                         .mngTel(item.getMNG_TEL())
@@ -117,8 +119,8 @@ public class EmergencyBellService {
         // 인덱스: 0=id, 1=lat, 2=lon, 3=insDetail, 4=mngTel, 5=adres, 6=insType, 7=distance
         return raw.stream().map(row -> {
             Long id = row[0] != null ? ((Number) row[0]).longValue() : null;
-            BigDecimal latitude = row[1] != null ? new BigDecimal(row[1].toString()) : null;
-            BigDecimal longitude = row[2] != null ? new BigDecimal(row[2].toString()) : null;
+            Double latitude = row[1] != null ? ((Number) row[1]).doubleValue() : null;
+            Double longitude = row[2] != null ? ((Number) row[2]).doubleValue() : null;
             String installDetail = row[3] != null ? row[3].toString() : null;
             Double distance = row[7] != null ? ((Number) row[7]).doubleValue() : null;
 
@@ -133,14 +135,14 @@ public class EmergencyBellService {
         }).collect(Collectors.toList());
     }
 
-    // 상세조회: 풀 정보
+    // 상세조회
     @Transactional(readOnly = true)
     public Optional<EmergencyBellSummaryDto> getEmergencyBellDetail(Long id) {
         return repository.findById(id).map(e ->
                 EmergencyBellSummaryDto.builder()
                         .objtId(e.getId())
-                        .lat(e.getLat())
-                        .lon(e.getLon())
+                        .lat(toDouble(e.getLat()))
+                        .lon(toDouble(e.getLon()))
                         .insDetail(e.getIns_DETAIL())
                         .mngTel(e.getMng_TEL())
                         .adres(e.getAdres())
@@ -180,7 +182,7 @@ public class EmergencyBellService {
     }
 
     /** =========================
-     *  JDBC Batch Upsert (x,y 제거)
+     *  JDBC Batch Upsert
      *  ========================= */
     @Transactional
     public void bulkUpsertEmergencyBells(List<EmergencyBellXmlDto.Item> items) {
@@ -309,5 +311,10 @@ public class EmergencyBellService {
                 .replaceAll("&(?!amp;|lt;|gt;|quot;|apos;|#[0-9]+;|#x[0-9a-fA-F]+;)", "&amp;");
         s = new String(s.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
         return s;
+    }
+
+    // ====== 공용 변환 유틸 ======
+    private static Double toDouble(java.math.BigDecimal v) {
+        return (v == null) ? null : v.doubleValue();
     }
 }

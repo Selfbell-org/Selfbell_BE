@@ -13,12 +13,11 @@ import java.math.BigDecimal;
 @Builder
 public class EmergencyBell {
 
-    // 외부 API의 OBJT_ID를 PK로 사용
+    // 외부 API의 OBJT_ID(일련번호)를 PK로 사용
     @Id
     @Column(name = "id")
     private Long id;
 
-    // 논의 후 정밀도/스케일 권장값 지정 예정
     @Column(name = "lon", precision = 11, scale = 8)
     private BigDecimal lon;
 
