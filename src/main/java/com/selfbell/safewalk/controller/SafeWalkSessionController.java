@@ -20,9 +20,9 @@ public class SafeWalkSessionController {
 
     @PostMapping
     public ResponseEntity<SessionCreateResponse> startSession(
-            @RequestParam Long userId, // TODO: 인증 구현 후 @CurrentUser로 변경
             @RequestBody @Valid SessionCreateRequest request
     ) {
+        Long userId = currentUserId();
         SessionCreateResponse response = safeWalkService.createSession(userId, request);
         return ResponseEntity.created(URI.create("/api/safe-walks/" + response.sessionId())).body(response);
     }
@@ -30,10 +30,17 @@ public class SafeWalkSessionController {
     @PutMapping("/{sessionId}/end")
     public ResponseEntity<SessionEndResponse> endSession(
             @PathVariable Long sessionId,
-            @RequestParam Long userId, // TODO: 인증 구현 후 @CurrentUser로 변경
             @RequestBody @Valid SessionEndRequest request
     ) {
+        Long userId = currentUserId();
         SessionEndResponse response = safeWalkService.endSession(sessionId, userId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{sessionId}")
+    public ResponseEntity<SessionResponse> getSession(@PathVariable Long sessionId){
+        Long userId = currentUserId();
+        SessionResponse response = safeWalkService.getSession(userId, sessionId);
         return ResponseEntity.ok(response);
     }
 
