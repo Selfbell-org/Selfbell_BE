@@ -1,9 +1,6 @@
 package com.selfbell.safewalk.controller;
 
-import com.selfbell.safewalk.dto.SessionCreateRequest;
-import com.selfbell.safewalk.dto.SessionCreateResponse;
-import com.selfbell.safewalk.dto.SessionEndRequest;
-import com.selfbell.safewalk.dto.SessionEndResponse;
+import com.selfbell.safewalk.dto.*;
 import com.selfbell.safewalk.service.SafeWalkService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+
+import static com.selfbell.global.jwt.JwtTokenProvider.currentUserId;
 
 @RestController
 @RequestMapping("/api/v1/safe-walks")
@@ -36,5 +35,13 @@ public class SafeWalkSessionController {
     ) {
         SessionEndResponse response = safeWalkService.endSession(sessionId, userId, request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("ward/current")
+    public ResponseEntity<SessionStatusResponse> getCurrentSessionStatus() {
+        Long userId = currentUserId();
+        return safeWalkService.getCurrentStatus(userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }

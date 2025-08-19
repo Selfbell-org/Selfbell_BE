@@ -1,5 +1,7 @@
 package com.selfbell.safewalk.service;
 
+import com.selfbell.global.error.ApiException;
+import com.selfbell.global.error.ErrorCode;
 import com.selfbell.safewalk.domain.GeoPoint;
 import com.selfbell.safewalk.domain.SafeWalkSession;
 import com.selfbell.safewalk.domain.enums.SafeWalkStatus;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.selfbell.safewalk.domain.SafeWalkGuardian.createGuardian;
 
@@ -78,6 +81,10 @@ public class SafeWalkService {
         return SessionEndResponse.of(session);
     }
 
+    public Optional<SessionStatusResponse> getCurrentStatus(Long userId) {
+        return safeWalkSessionRepository.findByWardIdAndSafeWalkStatus(userId, SafeWalkStatus.IN_PROGRESS)
+                .map(SessionStatusResponse::from);
+    }
 
     private void validateNoActiveSession(User ward) {
         safeWalkSessionRepository.findActiveSessionByWard(ward, SafeWalkStatus.IN_PROGRESS)

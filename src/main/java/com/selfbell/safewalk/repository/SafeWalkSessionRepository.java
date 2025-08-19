@@ -13,4 +13,6 @@ public interface SafeWalkSessionRepository extends JpaRepository<SafeWalkSession
     
     @Query("SELECT s FROM SafeWalkSession s WHERE s.ward = :ward AND s.safeWalkStatus = :status AND s.endedAt IS NULL")
     Optional<SafeWalkSession> findActiveSessionByWard(@Param("ward") User ward, @Param("status") SafeWalkStatus status);
+
+    Optional<SafeWalkSession> findByWardIdAndSafeWalkStatus(Long userId, SafeWalkStatus status);
 }
