@@ -3,8 +3,6 @@ package com.selfbell.criminal.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.math.BigDecimal;
-
 /** 주소 → 위경도(+ 사용자와의 거리 m) 응답 DTO */
 @Getter
 @Builder
