@@ -78,6 +78,7 @@ public class SafeWalkService {
         return SessionEndResponse.of(session);
     }
 
+    @Transactional(readOnly = true)
     public SessionResponse getSession(
             final Long userId,
             final Long sessionId
@@ -90,6 +91,7 @@ public class SafeWalkService {
         return SessionResponse.of(session, guardians);
     }
 
+    @Transactional(readOnly = true)
     public Optional<SessionStatusResponse> getCurrentStatus(Long userId) {
         return safeWalkSessionRepository.findByWardIdAndSafeWalkStatus(userId, SafeWalkStatus.IN_PROGRESS)
                 .map(SessionStatusResponse::from);
