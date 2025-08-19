@@ -36,5 +36,15 @@ logging:
     org.springframework.messaging: DEBUG
     com.selfbell.safewalk.service.SafeWalkTrackService: DEBUG
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
 server:
   port: 8080
