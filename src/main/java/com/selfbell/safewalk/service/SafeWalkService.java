@@ -48,8 +48,7 @@ public class SafeWalkService {
                 createGeoPointFromOrigin(request.origin()), request.originAddress(),
                 createGeoPointFromDestination(request.destination()), request.destinationAddress(),
                 parseAndValidateExpectedArrival(request.expectedArrival()),
-                calculateTimerEnd(request.timerMinutes(), now),
-                now, null, SafeWalkStatus.IN_PROGRESS
+                calculateTimerEnd(request.timerMinutes(), now), null, SafeWalkStatus.IN_PROGRESS
                 );
 
         safeWalkSessionRepository.save(session);
@@ -78,6 +77,17 @@ public class SafeWalkService {
         return SessionEndResponse.of(session);
     }
 
+    public SessionResponse getSession(
+            final Long userId,
+            final Long sessionId
+    ) {
+        final SafeWalkSession session = findSessionByIdOrThrow(sessionId);
+        validateSessionAccess(session, userId);
+        validateSessionActive(session);
+
+        final List<SafeWalkGuardian> guardians = safeWalkGuardianRepository.findBySessionId(sessionId);
+        return SessionResponse.of(session, guardians);
+    }
 
     private void validateNoActiveSession(User ward) {
         safeWalkSessionRepository.findActiveSessionByWard(ward, SafeWalkStatus.IN_PROGRESS)
@@ -149,7 +159,7 @@ public class SafeWalkService {
 
     public static void validateSessionActive(final SafeWalkSession session) {
         if (!session.isActive()) {
-            log.warn("비활성화된 세션에 트랙 업로드 또는 종료 시도. 세션 ID: {}, 상태: {}",
+            log.warn("비활성화된 세션에 트랙 업로드 | 조회 | 종료 시도. 세션 ID: {}, 상태: {}",
                     session.getId(), session.getSafeWalkStatus());
             throw new SessionNotActiveException(session.getId());
         }

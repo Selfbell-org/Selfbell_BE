@@ -2,17 +2,14 @@ package com.selfbell.safewalk.dto;
 
 import com.selfbell.safewalk.domain.SafeWalkTrack;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 public record TrackUploadResponse(
         Long trackId,
         Long sessionId,
         Double lat,
         Double lon,
         Double accuracyM,
-        LocalDateTime capturedAt,
-        LocalDateTime createdAt,
+        String capturedAt,
+        String createdAt,
         String status
 ) {
     public static TrackUploadResponse from(SafeWalkTrack track) {
@@ -22,8 +19,8 @@ public record TrackUploadResponse(
                 track.getPoint().getLat().doubleValue(),
                 track.getPoint().getLon().doubleValue(),
                 track.getAccuracyM(),
-                track.getCapturedAt(),
-                track.getCreatedAt(),
+                track.getCapturedAt().toString(),
+                track.getCreatedAt().toString(),
                 "UPLOADED"
         );
     }

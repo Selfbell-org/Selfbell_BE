@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.selfbell.global.jwt.JwtTokenProvider.currentUserId;
+
 @RestController
 @RequestMapping("/api/v1/safe-walks")
 @RequiredArgsConstructor
@@ -18,9 +20,9 @@ public class SafeWalkTrackController {
     @PostMapping("/{sessionId}/track")
     public ResponseEntity<TrackUploadResponse> uploadTrack(
             @PathVariable Long sessionId,
-            @RequestParam Long userId,  // TODO: 인증 구현 후 @CurrentUser로 변경
             @RequestBody @Valid TrackUploadRequest request
     ) {
+        Long userId = currentUserId();
         TrackUploadResponse response = safeWalkTrackService.uploadTrack(sessionId, userId, request);
 
         return ResponseEntity.ok(response);
