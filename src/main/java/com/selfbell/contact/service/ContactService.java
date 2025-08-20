@@ -56,9 +56,7 @@ public class ContactService {
 
         var saved = contactRepository.save(contact);
 
-        var meDto = ContactPartyDTO.of(me.getPhoneNumber(), me.getName());
-        var otherDto = ContactPartyDTO.of(to.getPhoneNumber(), to.getName());
-        return ContactCreateResponseDTO.from(saved, meDto, otherDto);
+        return ContactCreateResponseDTO.from(saved);
     }
 
     @Transactional
