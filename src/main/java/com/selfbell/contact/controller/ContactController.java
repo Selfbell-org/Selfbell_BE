@@ -40,11 +40,13 @@ public class ContactController {
     @GetMapping
     public ResponseEntity<ContactListResponseDTO> list(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false, name = "box") String box,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size
+    ) {
         Long meId = currentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        var resp = contactService.list(meId, status, pageable);
+        var resp = contactService.list(meId, status, box, pageable);
         return ResponseEntity.ok(resp);
     }
 }

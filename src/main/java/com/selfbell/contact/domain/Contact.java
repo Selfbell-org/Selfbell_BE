@@ -46,4 +46,6 @@ public class Contact extends BaseTimeEntity {
     public void updateSharePermission(boolean allow) {
         this.sharePermission = allow;
     }
+
+    public enum Direction { SENT, RECEIVED }
 }
