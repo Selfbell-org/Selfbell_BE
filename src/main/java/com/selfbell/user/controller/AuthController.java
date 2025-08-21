@@ -1,11 +1,9 @@
 package com.selfbell.user.controller;
 
 import com.selfbell.user.domain.User;
-import com.selfbell.user.dto.LoginRequestDTO;
-import com.selfbell.user.dto.LoginResponseDTO;
-import com.selfbell.user.dto.UserSignUpRequestDTO;
-import com.selfbell.user.dto.UserSignUpResponseDTO;
+import com.selfbell.user.dto.*;
 import com.selfbell.user.service.AuthService;
+import com.selfbell.user.service.TokenService;
 import com.selfbell.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +17,7 @@ public class AuthController {
 
     private final UserService userService;
     private final AuthService authService;
+    private final TokenService tokenService;
 
     @PostMapping("/signup")
     public ResponseEntity<UserSignUpResponseDTO> signUp(@RequestBody @Valid UserSignUpRequestDTO request) {
@@ -29,5 +28,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/token/refresh")
+    public ResponseEntity<TokenRefreshResponse> refresh(@RequestBody @Valid TokenRefreshRequest request) {
+        TokenRefreshResponse resp = tokenService.refresh(request);
+        return ResponseEntity.ok(resp);
     }
 }
