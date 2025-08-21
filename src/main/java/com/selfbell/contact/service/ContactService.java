@@ -35,12 +35,10 @@ public class ContactService {
         var me = getUserOr404(meId);
         var to = getUserOr404ByPhone(req.toPhoneNumber());
 
-        // 자기 자신 금지
         if (me.getPhoneNumber().equals(to.getPhoneNumber())) {
             throw new ApiException(ErrorCode.SELF_REQUEST_NOT_ALLOWED);
         }
 
-        // 이미 양방향 중 하나라도 존재하면 금지
         boolean exists = contactRepository.existsByUserAndContactOrUserAndContact(me, to, to, me);
         if (exists) {
             throw new ApiException(ErrorCode.CONTACT_ALREADY_EXISTS);
@@ -69,14 +67,13 @@ public class ContactService {
             throw new ApiException(ErrorCode.INVALID_STATUS_TRANSITION);
         }
 
-        // 상대방이 보낸 요청인지 확인 (수락은 요청의 상대만 가능)
         boolean iAmReceiver = contact.getContact().getId().equals(me.getId());
         if (!iAmReceiver) {
             throw new ApiException(ErrorCode.NOT_PARTICIPANT, "수락은 요청받은 당사자만 가능합니다.");
         }
 
         contact.accept();
-        // 더 바꿀 값 없으면 그대로 리턴
+
         return ContactAcceptResponseDTO.from(contact);
     }
 
@@ -94,7 +91,7 @@ public class ContactService {
     }
 
     @Transactional(readOnly = true)
-    public ContactListResponseDTO list(Long meId, String statusStr, Pageable pageable) {
+    public ContactListResponseDTO list(Long meId, String statusStr, String box, Pageable pageable) {
         var me = getUserOr404(meId);
 
         Status status = null;
@@ -109,7 +106,25 @@ public class ContactService {
             }
         }
 
-        Page<Contact> page = contactRepository.findAllForMeWithStatus(me, status, pageable);
+        String b = (box == null || box.isBlank()) ? "ALL" : box.trim().toUpperCase();
+
+        Page<Contact> page;
+        switch (b) {
+            case "SENT" -> {
+                if (status != null) page = contactRepository.findByUserAndStatus(me, status, pageable);
+                else page = contactRepository.findByUserOrContactAndStatus(me, me, Status.PENDING, pageable); // 필요 시 보완
+            }
+            case "RECEIVED" -> {
+                if (status != null) page = contactRepository.findByContactAndStatus(me, status, pageable);
+                else {
+                    page = contactRepository.findByContactAndStatus(me, Status.PENDING, pageable); // 임시: 주로 요청함 페이지용
+                }
+            }
+            default -> { // ALL
+                if (status != null) page = contactRepository.findByUserOrContactAndStatus(me, me, status, pageable);
+                else page = contactRepository.findByUserOrContact(me, me, pageable);
+            }
+        }
 
         var items = page.getContent().stream()
                 .map(c -> ContactListItemDTO.of(c, c.getUser().getId().equals(me.getId())))
