@@ -8,7 +8,10 @@ public record ContactPartyDTO(
         String name
 ) {
     public static ContactPartyDTO of(User u) {
-        return new ContactPartyDTO(u.getId(), u.getPhoneNumber(), u.getName());
+        return new ContactPartyDTO(
+                u.getId(),
+                u.getPhoneNumber(),
+                u.getName()
+        );
     }
 }
-
