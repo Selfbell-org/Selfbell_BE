@@ -13,7 +13,11 @@ public record ContactListItemDTO(
         var otherUser = meIsUserSide ? contact.getContact() : contact.getUser();
         return new ContactListItemDTO(
                 contact.getId(),
-                ContactPartyDTO.of(otherUser.getPhoneNumber(), otherUser.getName()),
+                ContactPartyDTO.of(
+                        otherUser.getId(),
+                        otherUser.getPhoneNumber(),
+                        otherUser.getName()
+                ),
                 contact.getStatus(),
                 contact.isSharePermission()
         );

@@ -12,8 +12,8 @@ public record ContactCreateResponseDTO(
     public static ContactCreateResponseDTO from(Contact c) {
         return new ContactCreateResponseDTO(
                 c.getId(),
-                ContactPartyDTO.of(c.getUser()),
-                ContactPartyDTO.of(c.getContact()),
+                ContactPartyDTO.from(c.getUser()),
+                ContactPartyDTO.from(c.getContact()),
                 c.getStatus().name(),
                 c.isSharePermission()
         );
