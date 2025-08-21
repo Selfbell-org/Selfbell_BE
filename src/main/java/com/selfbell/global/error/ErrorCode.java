@@ -17,6 +17,12 @@ public enum ErrorCode {
     SHARE_CHANGE_NOT_ALLOWED(HttpStatus.CONFLICT, "SHARE_CHANGE_NOT_ALLOWED", "ACCEPTED 상태에서만 공유 권한을 변경할 수 있습니다."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "인증이 필요합니다."),
 
+    REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "REFRESH_TOKEN_INVALID", "유효하지 않은 리프레시 토큰입니다."),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "REFRESH_TOKEN_EXPIRED", "만료된 리프레시 토큰입니다."),
+    REFRESH_TOKEN_MISMATCH(HttpStatus.CONFLICT, "REFRESH_TOKEN_MISMATCH", "저장된 리프레시 토큰과 일치하지 않습니다."),
+    REFRESH_TOKEN_REVOKED(HttpStatus.FORBIDDEN, "REFRESH_TOKEN_REVOKED", "취소된 리프레시 토큰입니다."),
+    REFRESH_TOKEN_REUSED(HttpStatus.UNAUTHORIZED, "REFRESH_TOKEN_REUSED", "재사용이 감지된 리프레시 토큰입니다."),
+
     // AddressNotFoundException 예외 처리에 사용되는 ErrorCode
     ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "해당 주소를 찾을 수 없습니다."),
     ADDRESS_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "ADDRESS_UNAUTHORIZED", "주소에 대한 권한이 없습니다."),

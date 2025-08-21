@@ -18,8 +18,8 @@ spring:
 
 jwt:
   secret: ${jwt.secret}
-  access-token-validity: ${jwt.access-token-validity}
-  refresh-token-validity: ${jwt.refresh-token-validity}
+  access-token-validity: 3600000
+  refresh-token-validity: 1209600000
 
 api:
   criminal:
