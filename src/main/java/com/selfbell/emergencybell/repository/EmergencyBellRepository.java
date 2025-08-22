@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface EmergencyBellRepository extends JpaRepository<EmergencyBell, Long> {
 
-    // 근처 조회 (여러 컬럼을 반환하지만 /nearby에서는 필요한 5개만 사용)
+    // 근처 조회
     @Query(value = """
         SELECT 
             eb.id,

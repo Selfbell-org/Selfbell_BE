@@ -2,9 +2,10 @@ package com.selfbell.emergencybell.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
@@ -14,10 +15,10 @@ import java.math.BigDecimal;
 public class EmergencyBellSummaryDto {
 
     @JsonProperty("lat")
-    private BigDecimal lat;
+    private double lat;
 
     @JsonProperty("lon")
-    private BigDecimal lon;
+    private double lon;
 
     @JsonProperty("ins_DETAIL")
     private String insDetail;

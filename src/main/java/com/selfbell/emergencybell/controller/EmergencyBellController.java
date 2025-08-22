@@ -53,7 +53,7 @@ public class EmergencyBellController {
         return "DB update complete (JPA 1page)";
     }
 
-    // 근처 안심벨 조회: 최소 필드만 반환 (objt_ID, lat, lon, distance, ins_DETAIL)
+    // 근처 안심벨 조회: objt_ID, lat, lon, distance, ins_DETAIL만 반환
     @GetMapping("/nearby")
     public NearbyEmergencyBellsResponseDto getNearbyEmergencyBells(
             @RequestParam double lat,
@@ -69,7 +69,7 @@ public class EmergencyBellController {
         return new NearbyEmergencyBellsResponseDto(items.size(), items);
     }
 
-    // 상세: 풀 정보 유지
+    // 각 안심벨 상세정보
     @GetMapping("/{id}")
     public ResponseEntity<EmergencyBellSummaryDto> getEmergencyBellDetail(@PathVariable Long id) {
         return service.getEmergencyBellDetail(id)
@@ -77,7 +77,7 @@ public class EmergencyBellController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "안심벨을 찾을 수 없습니다."));
     }
 
-    // ===== 수동 트리거 =====
+    // ===== DB 적재 수동 트리거 =====
     @PostMapping("/full-sync")
     public String triggerFullSync() throws Exception {
         service.fullSyncBulk();

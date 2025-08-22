@@ -42,6 +42,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     implementation 'org.springframework.boot:spring-boot-starter-cache' //지오코더 캐시 활용
     implementation 'com.github.ben-manes.caffeine:caffeine' //지오코더 캐시 활용
+    implementation 'org.apache.httpcomponents.client5:httpclient5' //커넥션 풀 적용
 }
 
 tasks.named('test') {
