@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.selfbell.safewalk.service.SafeWalkService.validateSessionAccess;
+import static com.selfbell.safewalk.service.SafeWalkService.validateSessionOwnerAccess;
 import static com.selfbell.safewalk.service.SafeWalkService.validateSessionActive;
 
 @Slf4j
@@ -40,7 +40,7 @@ public class SafeWalkTrackService {
     ) {
         final SafeWalkSession session = findSessionByIdOrThrow(sessionId);
         
-        validateSessionAccess(session, userId);
+        validateSessionOwnerAccess(session, userId);
         validateSessionActive(session);
         
         final SafeWalkTrack track = createTrack(session, request);

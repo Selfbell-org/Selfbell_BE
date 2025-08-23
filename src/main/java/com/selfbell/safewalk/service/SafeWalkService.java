@@ -68,7 +68,7 @@ public class SafeWalkService {
     ) {
         SafeWalkSession session = findSessionByIdOrThrow(sessionId);
         final User user = userService.findByIdOrThrow(userId);
-        validateSessionAccess(session, user.getId());
+        validateSessionOwnerAccess(session, user.getId());
         validateSessionActive(session);
 
         // TODO: 세션 종료 이유에 따른 추가 로직 구현(현재는 단순히 세션 종료)
@@ -84,7 +84,7 @@ public class SafeWalkService {
             final Long sessionId
     ) {
         final SafeWalkSession session = findSessionByIdOrThrow(sessionId);
-        validateSessionAccess(session, userId);
+        validateSessionAccess(sessionId, userId);
 
         final List<SafeWalkGuardian> guardians = safeWalkGuardianRepository.findBySessionId(sessionId);
         return SessionDetailResponse.of(session, guardians);
@@ -192,9 +192,15 @@ public class SafeWalkService {
                 .orElseThrow(() -> new SessionNotFoundException(sessionId));
     }
 
-    public static void validateSessionAccess(final SafeWalkSession session, final Long userId) {
+    public static void validateSessionOwnerAccess(final SafeWalkSession session, final Long userId) {
         if (!session.getWard().getId().equals(userId)) {
             throw new SessionAccessDeniedException(session.getId(), userId);
+        }
+    }
+
+    private void validateSessionAccess(Long sessionId, Long userId) {
+        if (!safeWalkSessionRepository.existsByIdAndWardIdOrGuardianId(sessionId, userId)) {
+            throw new SessionAccessDeniedException(sessionId, userId);
         }
     }
 
