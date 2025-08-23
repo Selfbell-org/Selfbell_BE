@@ -1,7 +1,10 @@
 package com.selfbell.safewalk.exception;
 
-public class SessionNotFoundException extends RuntimeException {
+import com.selfbell.global.error.ApiException;
+import com.selfbell.global.error.ErrorCode;
+
+public class SessionNotFoundException extends ApiException {
     public SessionNotFoundException(Long sessionId) {
-        super("세션을 찾을 수 없습니다. 세션 ID: " + sessionId);
+        super(ErrorCode.SESSION_NOT_FOUND,"세션을 찾을 수 없습니다. 세션 ID: " + sessionId);
     }
 }

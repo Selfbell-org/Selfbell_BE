@@ -5,13 +5,12 @@ import com.selfbell.safewalk.domain.SafeWalkGuardian;
 import com.selfbell.safewalk.domain.SafeWalkSession;
 import com.selfbell.safewalk.domain.enums.SafeWalkStatus;
 import com.selfbell.safewalk.dto.*;
-import com.selfbell.safewalk.exception.ActiveSessionExistsException;
-import com.selfbell.safewalk.exception.SessionAccessDeniedException;
-import com.selfbell.safewalk.exception.SessionNotActiveException;
-import com.selfbell.safewalk.exception.SessionNotFoundException;
+import com.selfbell.safewalk.exception.*;
 import com.selfbell.safewalk.repository.SafeWalkGuardianRepository;
 import com.selfbell.safewalk.repository.SafeWalkSessionRepository;
 import com.selfbell.user.domain.User;
+import com.selfbell.user.exception.UserNotFoundException;
+import com.selfbell.user.repository.UserRepository;
 import com.selfbell.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +30,7 @@ public class SafeWalkService {
 
     private final SafeWalkSessionRepository safeWalkSessionRepository;
     private final SafeWalkGuardianRepository safeWalkGuardianRepository;
+    private final UserRepository userRepository;
 
     private final UserService userService;
 
@@ -118,11 +118,15 @@ public class SafeWalkService {
             return null;
         }
 
-        LocalDateTime parsedTime = LocalDateTime.parse(expectedArrival);
+        LocalDateTime parsedTime;
+        try {
+            parsedTime = LocalDateTime.parse(expectedArrival);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("도착 예정 시간 형식이 올바르지 않습니다. ISO-8601 형식을 사용해주세요.");
+        }
 
         if (parsedTime.isBefore(LocalDateTime.now())) {
-            log.warn("도착 예정 시간이 과거입니다. 입력값: {}", expectedArrival);
-            throw new IllegalArgumentException("도착 예정 시간은 현재 시간보다 미래여야 합니다");
+            throw new SessionArrivalTimePassedException("도착 예정 시간은 현재 시간보다 미래여야 합니다");
         }
 
         return parsedTime;
@@ -144,7 +148,7 @@ public class SafeWalkService {
         final List<Long> distinctGuardians = guardianIds.stream().distinct().toList();
 
         final List<SafeWalkGuardian> safeWalkGuardianList = distinctGuardians.stream()
-                .map(userService::findByIdOrThrow)
+                .map(this::findGuardianByIdOrThrow)
                 .map(guardian -> createGuardian(session, guardian))
                 .toList();
 
@@ -159,17 +163,18 @@ public class SafeWalkService {
 
     public static void validateSessionAccess(final SafeWalkSession session, final Long userId) {
         if (!session.getWard().getId().equals(userId)) {
-            log.warn("세션 접근 권한이 없습니다. 세션 ID: {}, 요청 사용자 ID: {}, 세션 소유자 ID: {}",
-                    session.getId(), userId, session.getWard().getId());
             throw new SessionAccessDeniedException(session.getId(), userId);
         }
     }
 
     public static void validateSessionActive(final SafeWalkSession session) {
         if (!session.isActive()) {
-            log.warn("비활성화된 세션에 트랙 업로드 | 조회 | 종료 시도. 세션 ID: {}, 상태: {}",
-                    session.getId(), session.getSafeWalkStatus());
             throw new SessionNotActiveException(session.getId());
         }
+    }
+
+    private User findGuardianByIdOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId, "해당 보호자를 찾을 수 없습니다. "));
     }
 }

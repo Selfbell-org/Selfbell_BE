@@ -24,7 +24,7 @@ public class SafeWalkSessionController {
     ) {
         Long userId = currentUserId();
         SessionCreateResponse response = safeWalkService.createSession(userId, request);
-        return ResponseEntity.created(URI.create("/api/safe-walks/" + response.sessionId())).body(response);
+        return ResponseEntity.created(URI.create("/api/v1/safe-walks/" + response.sessionId())).body(response);
     }
 
     @PutMapping("/{sessionId}/end")

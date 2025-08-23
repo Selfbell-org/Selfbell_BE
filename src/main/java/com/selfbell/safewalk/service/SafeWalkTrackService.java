@@ -60,13 +60,9 @@ public class SafeWalkTrackService {
 
     private SafeWalkTrack createTrack(final SafeWalkSession session, final TrackUploadRequest request) {
         final GeoPoint point = GeoPoint.of(request.lat(), request.lon());
+        final LocalDateTime capturedAt = LocalDateTime.parse(request.capturedAt());
 
-        return SafeWalkTrack.createTrack(
-                session,
-                point,
-                request.accuracyM(),
-                LocalDateTime.parse(request.capturedAt())
-        );
+        return SafeWalkTrack.createTrack(session, point, request.accuracyM(), capturedAt);
     }
 
     private void broadcastTrackEvent(final SafeWalkTrack track) {
