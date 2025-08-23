@@ -47,7 +47,7 @@ public class SafeWalkService {
         final SafeWalkSession session = SafeWalkSession.createSession(
                 user,
                 createGeoPointFromOrigin(request.origin()), request.originAddress(),
-                createGeoPointFromDestination(request.destination()), request.destinationAddress(),
+                createGeoPointFromDestination(request.destination()), request.destinationAddress(), request.destinationName(),
                 parseAndValidateExpectedArrival(request.expectedArrival()),
                 calculateTimerEnd(request.timerMinutes(), now), null, SafeWalkStatus.IN_PROGRESS
                 );

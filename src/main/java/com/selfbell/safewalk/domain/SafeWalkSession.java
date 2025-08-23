@@ -48,6 +48,8 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
     @Column(name = "destination_address")
     private String destinationAddress;
 
+    private String destinationName;
+
     // 도착시각 or 타이머 종료시각(둘 중 하나 사용)
     private LocalDateTime expectedArrival;
     private LocalDateTime timerEnd;
@@ -67,7 +69,7 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
 
     public static SafeWalkSession createSession(
             User user, GeoPoint origin, String originAddress,
-            GeoPoint destination, String destinationAddress,
+            GeoPoint destination, String destinationAddress, String destinationName,
             LocalDateTime expectedArrival, LocalDateTime timerEnd,
             LocalDateTime endedAt, SafeWalkStatus status
     ) {
@@ -77,6 +79,7 @@ public class SafeWalkSession {  // BaseTimeEntity 상속 안함!
                 .originAddress(originAddress)
                 .destination(destination)
                 .destinationAddress(destinationAddress)
+                .destinationName(destinationName)
                 .expectedArrival(expectedArrival)
                 .timerEnd(timerEnd)
                 .endedAt(endedAt)
