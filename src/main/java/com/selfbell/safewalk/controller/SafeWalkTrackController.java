@@ -1,5 +1,6 @@
 package com.selfbell.safewalk.controller;
 
+import com.selfbell.safewalk.dto.TrackListResponse;
 import com.selfbell.safewalk.dto.TrackUploadRequest;
 import com.selfbell.safewalk.dto.TrackUploadResponse;
 import com.selfbell.safewalk.service.SafeWalkTrackService;
@@ -25,6 +26,15 @@ public class SafeWalkTrackController {
         Long userId = currentUserId();
         TrackUploadResponse response = safeWalkTrackService.uploadTrack(sessionId, userId, request);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{sessionId}/tracks")
+    public ResponseEntity<TrackListResponse> retrieveTracks(
+            @PathVariable Long sessionId
+    ){
+        Long userId = currentUserId();
+        TrackListResponse response = safeWalkTrackService.retrieveTracks(sessionId, userId);
         return ResponseEntity.ok(response);
     }
 }
