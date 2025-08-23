@@ -3,10 +3,10 @@ package com.selfbell.safewalk.service;
 import com.selfbell.safewalk.domain.GeoPoint;
 import com.selfbell.safewalk.domain.SafeWalkSession;
 import com.selfbell.safewalk.domain.SafeWalkTrack;
+import com.selfbell.safewalk.dto.TrackListResponse;
+import com.selfbell.safewalk.dto.TrackResponse;
 import com.selfbell.safewalk.dto.TrackUploadRequest;
 import com.selfbell.safewalk.dto.TrackUploadResponse;
-import com.selfbell.safewalk.exception.SessionAccessDeniedException;
-import com.selfbell.safewalk.exception.SessionNotActiveException;
 import com.selfbell.safewalk.exception.SessionNotFoundException;
 import com.selfbell.safewalk.repository.SafeWalkSessionRepository;
 import com.selfbell.safewalk.repository.SafeWalkTrackRepository;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static com.selfbell.safewalk.service.SafeWalkService.validateSessionAccess;
 import static com.selfbell.safewalk.service.SafeWalkService.validateSessionActive;
@@ -50,6 +51,19 @@ public class SafeWalkTrackService {
             sessionId, track.getId(), userId);
         
         return TrackUploadResponse.from(track);
+    }
+
+    @Transactional(readOnly = true)
+    public TrackListResponse retrieveTracks(Long sessionId, Long userId) {
+        findSessionByIdOrThrow(sessionId);
+
+        final List<SafeWalkTrack> tracks = safeWalkTrackRepository.findAllBySessionIdOrderByCapturedAtAsc(sessionId);
+
+        final List<TrackResponse> trackResponses = tracks.stream()
+                .map(TrackResponse::from)
+                .toList();
+
+        return TrackListResponse.from(trackResponses);
     }
 
     private SafeWalkSession findSessionByIdOrThrow(final Long sessionId) {
