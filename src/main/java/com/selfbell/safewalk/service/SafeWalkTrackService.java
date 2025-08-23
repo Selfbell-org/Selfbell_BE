@@ -54,7 +54,7 @@ public class SafeWalkTrackService {
     }
 
     @Transactional(readOnly = true)
-    public TrackListResponse retrieveTracks(Long sessionId, Long userId) {
+    public TrackListResponse retrieveTracks(Long sessionId) {
         findSessionByIdOrThrow(sessionId);
 
         final List<SafeWalkTrack> tracks = safeWalkTrackRepository.findAllBySessionIdOrderByCapturedAtAsc(sessionId);

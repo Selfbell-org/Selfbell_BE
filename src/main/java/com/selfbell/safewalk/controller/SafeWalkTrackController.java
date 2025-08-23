@@ -33,8 +33,7 @@ public class SafeWalkTrackController {
     public ResponseEntity<TrackListResponse> retrieveTracks(
             @PathVariable Long sessionId
     ){
-        Long userId = currentUserId();
-        TrackListResponse response = safeWalkTrackService.retrieveTracks(sessionId, userId);
+        TrackListResponse response = safeWalkTrackService.retrieveTracks(sessionId);
         return ResponseEntity.ok(response);
     }
 }
