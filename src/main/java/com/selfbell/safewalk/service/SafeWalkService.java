@@ -85,7 +85,6 @@ public class SafeWalkService {
     ) {
         final SafeWalkSession session = findSessionByIdOrThrow(sessionId);
         validateSessionAccess(session, userId);
-        validateSessionActive(session);
 
         final List<SafeWalkGuardian> guardians = safeWalkGuardianRepository.findBySessionId(sessionId);
         return SessionDetailResponse.of(session, guardians);
