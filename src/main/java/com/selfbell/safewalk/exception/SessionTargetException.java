@@ -1,7 +1,10 @@
 package com.selfbell.safewalk.exception;
 
-public class SessionTargetException extends IllegalArgumentException {
-    public SessionTargetException(String s) {
-        super("Target은 \"me\" 혹은 \"ward\"만 가능합니다. 현재 Target:" + s);
+import com.selfbell.global.error.ApiException;
+import com.selfbell.global.error.ErrorCode;
+
+public class SessionTargetException extends ApiException {
+    public SessionTargetException(String target) {
+        super(ErrorCode.INVALID_SESSION_TARGET, "Target은 'me' 또는 'ward'만 허용됩니다. 입력값: " + target);
     }
 }
