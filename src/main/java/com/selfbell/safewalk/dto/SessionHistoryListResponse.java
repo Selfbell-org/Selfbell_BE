@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record SessionListResponse(
-        List<SessionListItem> sessions
+public record SessionHistoryListResponse(
+        List<SessionHistoryItem> sessions
 ) {
 }

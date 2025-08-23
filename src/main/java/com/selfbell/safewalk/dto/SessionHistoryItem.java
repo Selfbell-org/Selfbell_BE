@@ -6,12 +6,12 @@ import lombok.Builder;
 
 
 @Builder
-public record SessionListItem(
+public record SessionHistoryItem(
         UserResponse ward,
         SessionSimpleResponse session
 ) {
-    public static SessionListItem from(SafeWalkSession session) {
-        return SessionListItem.builder()
+    public static SessionHistoryItem from(SafeWalkSession session) {
+        return SessionHistoryItem.builder()
                 .ward(UserResponse.from(session.getWard()))
                 .session(SessionSimpleResponse.from(session))
                 .build();

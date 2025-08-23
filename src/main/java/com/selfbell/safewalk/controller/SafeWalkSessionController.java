@@ -53,10 +53,10 @@ public class SafeWalkSessionController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<SessionListResponse> getSessionList(
+    public ResponseEntity<SessionHistoryListResponse> getSessionList(
             @RequestParam String target){
         Long userId = currentUserId();
-        SessionListResponse response = safeWalkService.getSessionList(userId, target);
+        SessionHistoryListResponse response = safeWalkService.getSessionList(userId, target);
         return ResponseEntity.ok(response);
     }
 }

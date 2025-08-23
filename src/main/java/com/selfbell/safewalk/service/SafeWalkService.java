@@ -97,18 +97,18 @@ public class SafeWalkService {
     }
 
     @Transactional(readOnly = true)
-    public SessionListResponse getSessionList(Long userId, String target) {
+    public SessionHistoryListResponse getSessionList(Long userId, String target) {
         List<SafeWalkSession> sessions = switch (target) {
             case "ward" -> getSessionsAsGuardian(userId);
             case "me" -> getSessionsAsWard(userId);
             default -> throw new SessionTargetException(target);
         };
         
-        List<SessionListItem> sessionItems = sessions.stream()
-                .map(SessionListItem::from)
+        List<SessionHistoryItem> sessionItems = sessions.stream()
+                .map(SessionHistoryItem::from)
                 .toList();
                 
-        return new SessionListResponse(sessionItems);
+        return new SessionHistoryListResponse(sessionItems);
     }
 
     private List<SafeWalkSession> getSessionsAsGuardian(Long userId) {
