@@ -5,13 +5,12 @@ import com.selfbell.safewalk.domain.SafeWalkGuardian;
 import com.selfbell.safewalk.domain.SafeWalkSession;
 import com.selfbell.safewalk.domain.enums.SafeWalkStatus;
 import com.selfbell.safewalk.dto.*;
-import com.selfbell.safewalk.exception.ActiveSessionExistsException;
-import com.selfbell.safewalk.exception.SessionAccessDeniedException;
-import com.selfbell.safewalk.exception.SessionNotActiveException;
-import com.selfbell.safewalk.exception.SessionNotFoundException;
+import com.selfbell.safewalk.exception.*;
 import com.selfbell.safewalk.repository.SafeWalkGuardianRepository;
 import com.selfbell.safewalk.repository.SafeWalkSessionRepository;
 import com.selfbell.user.domain.User;
+import com.selfbell.user.exception.UserNotFoundException;
+import com.selfbell.user.repository.UserRepository;
 import com.selfbell.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +30,7 @@ public class SafeWalkService {
 
     private final SafeWalkSessionRepository safeWalkSessionRepository;
     private final SafeWalkGuardianRepository safeWalkGuardianRepository;
+    private final UserRepository userRepository;
 
     private final UserService userService;
 
@@ -122,7 +122,7 @@ public class SafeWalkService {
 
         if (parsedTime.isBefore(LocalDateTime.now())) {
             log.warn("도착 예정 시간이 과거입니다. 입력값: {}", expectedArrival);
-            throw new IllegalArgumentException("도착 예정 시간은 현재 시간보다 미래여야 합니다");
+            throw new SessionArrivalTimePassedException("도착 예정 시간은 현재 시간보다 미래여야 합니다");
         }
 
         return parsedTime;
@@ -144,7 +144,7 @@ public class SafeWalkService {
         final List<Long> distinctGuardians = guardianIds.stream().distinct().toList();
 
         final List<SafeWalkGuardian> safeWalkGuardianList = distinctGuardians.stream()
-                .map(userService::findByIdOrThrow)
+                .map(this::findGuardianByIdOrThrow)
                 .map(guardian -> createGuardian(session, guardian))
                 .toList();
 
@@ -171,5 +171,10 @@ public class SafeWalkService {
                     session.getId(), session.getSafeWalkStatus());
             throw new SessionNotActiveException(session.getId());
         }
+    }
+
+    private User findGuardianByIdOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId, "해당 보호자를 찾을 수 없습니다. "));
     }
 }
