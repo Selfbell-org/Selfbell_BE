@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SafeWalkSessionRepository extends JpaRepository<SafeWalkSession, Long> {
@@ -15,4 +16,8 @@ public interface SafeWalkSessionRepository extends JpaRepository<SafeWalkSession
     Optional<SafeWalkSession> findActiveSessionByWard(@Param("ward") User ward, @Param("status") SafeWalkStatus status);
 
     Optional<SafeWalkSession> findByWardIdAndSafeWalkStatus(Long userId, SafeWalkStatus status);
+
+    List<SafeWalkSession> findByIdIn(List<Long> sessionIds);
+
+    List<SafeWalkSession> findByWardId(Long userId);
 }

@@ -5,6 +5,7 @@ import com.selfbell.global.error.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -17,6 +18,17 @@ public class GlobalExceptionHandler {
         var ec = e.getErrorCode();
         var body = ErrorResponse.of(ec.getCode(), e.getMessage());
         return ResponseEntity.status(ec.getStatus()).body(body);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e) {
+        log.error("Validation Failed: {}", e.getMessage());
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .findFirst()
+                .orElse("유효하지 않은 입력입니다.");
+        ErrorResponse error = ErrorResponse.of("VALIDATION_FAILED", message);
+        return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
