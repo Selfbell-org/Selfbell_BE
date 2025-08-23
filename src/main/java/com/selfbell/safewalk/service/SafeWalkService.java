@@ -169,6 +169,8 @@ public class SafeWalkService {
             return;
         }
 
+        validateNoSelfGuardian(session.getWard().getId(), guardianIds);
+        
         final List<Long> distinctGuardians = guardianIds.stream().distinct().toList();
 
         final List<SafeWalkGuardian> safeWalkGuardianList = distinctGuardians.stream()
@@ -178,6 +180,12 @@ public class SafeWalkService {
 
         safeWalkGuardianRepository.saveAll(safeWalkGuardianList);
         log.info("보호자 {}명을 세션에 추가했습니다. 세션 ID: {}", safeWalkGuardianList.size(), session.getId());
+    }
+    
+    private void validateNoSelfGuardian(final Long wardId, final List<Long> guardianIds) {
+        if (guardianIds.contains(wardId)) {
+            throw new SelfGuardianNotAllowedException(wardId);
+        }
     }
 
     private SafeWalkSession findSessionByIdOrThrow(final Long sessionId) {
