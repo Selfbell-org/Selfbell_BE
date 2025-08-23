@@ -34,12 +34,17 @@ api:
   vworld:
     key: ${api.vworld.key}
 
+firebase:
+  service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY}
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.messaging: DEBUG
     com.selfbell.safewalk.service.SafeWalkTrackService: DEBUG
+    com.selfbell.notification: INFO
+    com.google.firebase: DEBUG
 
 management:
   endpoints:
