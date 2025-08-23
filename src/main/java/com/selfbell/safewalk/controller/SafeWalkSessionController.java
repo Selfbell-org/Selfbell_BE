@@ -38,9 +38,9 @@ public class SafeWalkSessionController {
     }
 
     @GetMapping("/{sessionId}")
-    public ResponseEntity<SessionResponse> getSession(@PathVariable Long sessionId){
+    public ResponseEntity<SessionDetailResponse> getSession(@PathVariable Long sessionId){
         Long userId = currentUserId();
-        SessionResponse response = safeWalkService.getSession(userId, sessionId);
+        SessionDetailResponse response = safeWalkService.getSession(userId, sessionId);
         return ResponseEntity.ok(response);
     }
 

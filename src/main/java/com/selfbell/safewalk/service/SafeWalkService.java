@@ -79,7 +79,7 @@ public class SafeWalkService {
     }
 
     @Transactional(readOnly = true)
-    public SessionResponse getSession(
+    public SessionDetailResponse getSession(
             final Long userId,
             final Long sessionId
     ) {
@@ -88,7 +88,7 @@ public class SafeWalkService {
         validateSessionActive(session);
 
         final List<SafeWalkGuardian> guardians = safeWalkGuardianRepository.findBySessionId(sessionId);
-        return SessionResponse.of(session, guardians);
+        return SessionDetailResponse.of(session, guardians);
     }
 
     @Transactional(readOnly = true)

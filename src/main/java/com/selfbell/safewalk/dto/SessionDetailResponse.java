@@ -6,7 +6,7 @@ import com.selfbell.user.dto.UserResponse;
 
 import java.util.List;
 
-public record SessionResponse(
+public record SessionDetailResponse(
         Long sessionId,
         UserResponse ward,
         LocationResponse origin,
@@ -18,13 +18,13 @@ public record SessionResponse(
         List<UserResponse> guardians
 
 ) {
-    public static SessionResponse of(SafeWalkSession session, List<SafeWalkGuardian> guardians) {
+    public static SessionDetailResponse of(SafeWalkSession session, List<SafeWalkGuardian> guardians) {
         List<UserResponse> guardianResponses = guardians.stream()
                 .map(SafeWalkGuardian::getGuardian)
                 .map(UserResponse::from)
                 .toList();
 
-        return new SessionResponse(
+        return new SessionDetailResponse(
                 session.getId(),
                 UserResponse.from(session.getWard()),
                 LocationResponse.from(session.getOrigin(), session.getOriginAddress()),
