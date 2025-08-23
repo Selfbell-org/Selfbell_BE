@@ -7,6 +7,7 @@ import com.selfbell.safewalk.dto.TrackListResponse;
 import com.selfbell.safewalk.dto.TrackResponse;
 import com.selfbell.safewalk.dto.TrackUploadRequest;
 import com.selfbell.safewalk.dto.TrackUploadResponse;
+import com.selfbell.safewalk.exception.SessionAccessDeniedException;
 import com.selfbell.safewalk.exception.SessionNotFoundException;
 import com.selfbell.safewalk.repository.SafeWalkSessionRepository;
 import com.selfbell.safewalk.repository.SafeWalkTrackRepository;
@@ -54,8 +55,9 @@ public class SafeWalkTrackService {
     }
 
     @Transactional(readOnly = true)
-    public TrackListResponse retrieveTracks(Long sessionId) {
+    public TrackListResponse retrieveTracks(Long sessionId, Long userId) {
         findSessionByIdOrThrow(sessionId);
+        validateTrackAccess(sessionId, userId);
 
         final List<SafeWalkTrack> tracks = safeWalkTrackRepository.findAllBySessionIdOrderByCapturedAtAsc(sessionId);
 
@@ -89,6 +91,12 @@ public class SafeWalkTrackService {
             log.debug("트랙 이벤트 브로드캐스트 완료. Topic: {}, 트랙 ID: {}", topic, track.getId());
         } catch (Exception e) {
             log.error("트랙 이벤트 브로드캐스트 실패. 트랙 ID: {}", track.getId(), e);
+        }
+    }
+
+    private void validateTrackAccess(Long sessionId, Long userId) {
+        if (!safeWalkSessionRepository.existsByIdAndWardIdOrGuardianId(sessionId, userId)) {
+            throw new SessionAccessDeniedException(sessionId, userId);
         }
     }
 }
