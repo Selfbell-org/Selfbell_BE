@@ -44,7 +44,7 @@ public class SafeWalkSessionController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("ward/current")
+    @GetMapping("/ward/current")
     public ResponseEntity<SessionStatusResponse> getCurrentSessionStatus() {
         Long userId = currentUserId();
         return safeWalkService.getCurrentStatus(userId)
