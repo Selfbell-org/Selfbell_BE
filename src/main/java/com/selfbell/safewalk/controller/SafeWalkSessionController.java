@@ -51,4 +51,12 @@ public class SafeWalkSessionController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
     }
+
+    @GetMapping("/history")
+    public ResponseEntity<SessionListResponse> getSessionList(
+            @RequestParam String target){
+        Long userId = currentUserId();
+        SessionListResponse response = safeWalkService.getSessionList(userId, target);
+        return ResponseEntity.ok(response);
+    }
 }

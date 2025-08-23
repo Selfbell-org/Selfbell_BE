@@ -97,6 +97,31 @@ public class SafeWalkService {
                 .map(SessionStatusResponse::from);
     }
 
+    @Transactional(readOnly = true)
+    public SessionListResponse getSessionList(Long userId, String target) {
+
+        if (target.equals("ward")) {
+            // 내가 보호자인 경우에 상대 피보호자 조회
+            List<Long> sessionIds = safeWalkGuardianRepository.findSessionIdByGuardianId(userId);
+            List<SafeWalkSession> sessions = safeWalkSessionRepository.findByIdIn(sessionIds);
+            List<SessionListItem> sessionItems = sessions.stream()
+                    .map(SessionListItem::from)
+                    .toList();
+
+            return new SessionListResponse(sessionItems);
+
+        } else if (target.equals("me")) {
+            // 내가 피보호자인 경우에 내 안심귀가 세션 조회
+            List<SafeWalkSession> sessions = safeWalkSessionRepository.findByWardId(userId);
+            List<SessionListItem> sessionItems = sessions.stream()
+                    .map(SessionListItem::from)
+                    .toList();
+            return new SessionListResponse(sessionItems);
+        } else {
+            throw new SessionTargetException(target);
+        }
+    }
+
     private void validateNoActiveSession(User ward) {
         safeWalkSessionRepository.findActiveSessionByWard(ward, SafeWalkStatus.IN_PROGRESS)
                 .ifPresent(session -> {
