@@ -1,0 +1,60 @@
+spring:
+  profiles:
+    active: prod
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+  cache:
+    cache-names: addr2coord, reverse_admin
+    caffeine:
+      spec: maximumSize=200000,expireAfterWrite=7d
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY}
+  refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY}
+
+api:
+  criminal:
+    key: ${API_CRIMINAL_KEY}
+    page-size: 1000
+  emergencybell:
+    key: ${API_EMERGENCYBELL_KEY}
+  vworld:
+    key: ${API_VWORLD_KEY}
+
+firebase:
+  service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY}
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.messaging: DEBUG
+    com.selfbell.safewalk.service.SafeWalkTrackService: DEBUG
+    com.selfbell.notification: INFO
+    com.google.firebase: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+server:
+  port: ${SERVET_PORT}

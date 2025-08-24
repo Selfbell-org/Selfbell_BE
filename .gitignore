@@ -35,3 +35,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### application-prod.yml ###
+application-prod.yml
+
+### safebell.json ###
+src/main/resources/safebell.json
+src/main/resources/firebase/safebell.json

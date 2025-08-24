@@ -1,0 +1,14 @@
+package com.selfbell.criminal.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+
+/** 주소 → 위경도(+ 사용자와의 거리 m) 응답 DTO */
+@Getter
+@Builder
+public class CriminalCoordDto {
+    private final String address;   // 예: "서울특별시 광진구 중곡동 18-109"
+    private final double lat;   // 위도 (latitude)
+    private final double lon;   // 경도 (longitude)
+    private final double distanceMeters; // 사용자와의 거리(m). nearby에서만 채워짐
+}

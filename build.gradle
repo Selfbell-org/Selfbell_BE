@@ -28,6 +28,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
@@ -35,8 +36,25 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml' //XML 응답을 처리할 수 있는 JAXB 기반 컨버터 등록(성범죄자 api)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    implementation 'org.springframework.boot:spring-boot-starter-cache' //지오코더 캐시 활용
+    implementation 'com.github.ben-manes.caffeine:caffeine' //지오코더 캐시 활용
+    implementation 'org.apache.httpcomponents.client5:httpclient5' //커넥션 풀 적용
+    implementation 'com.google.firebase:firebase-admin:9.2.0' //Firebase Admin SDK
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// 수정부분
+// 실행 JAR 파일명을 고정 (도커 COPY가 항상 이 파일만 집게)
+tasks.named("bootJar") {
+    archiveFileName = "app.jar"
+}
+
+// 혹시 plain.jar 생기는 경우를 확실히 차단 (선택이지만 권장)
+tasks.named("jar") { enabled = false }

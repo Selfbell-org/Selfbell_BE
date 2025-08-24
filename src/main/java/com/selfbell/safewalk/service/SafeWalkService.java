@@ -1,0 +1,221 @@
+package com.selfbell.safewalk.service;
+
+import com.selfbell.safewalk.domain.GeoPoint;
+import com.selfbell.safewalk.domain.SafeWalkGuardian;
+import com.selfbell.safewalk.domain.SafeWalkSession;
+import com.selfbell.safewalk.domain.enums.SafeWalkStatus;
+import com.selfbell.safewalk.dto.*;
+import com.selfbell.safewalk.exception.*;
+import com.selfbell.safewalk.repository.SafeWalkGuardianRepository;
+import com.selfbell.safewalk.repository.SafeWalkSessionRepository;
+import com.selfbell.user.domain.User;
+import com.selfbell.user.exception.UserNotFoundException;
+import com.selfbell.user.repository.UserRepository;
+import com.selfbell.user.service.UserService;
+import com.selfbell.notification.service.FcmService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static com.selfbell.safewalk.domain.SafeWalkGuardian.createGuardian;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class SafeWalkService {
+
+    private final SafeWalkSessionRepository safeWalkSessionRepository;
+    private final SafeWalkGuardianRepository safeWalkGuardianRepository;
+    private final UserRepository userRepository;
+
+    private final UserService userService;
+    private final FcmService fcmService;
+
+    @Transactional
+    public SessionCreateResponse createSession(
+            final Long userId,
+            final SessionCreateRequest request
+    ) {
+        final User user = userService.findByIdOrThrow(userId);
+        validateNoActiveSession(user);
+
+        final LocalDateTime now = LocalDateTime.now();
+
+        final SafeWalkSession session = SafeWalkSession.createSession(
+                user,
+                createGeoPointFromOrigin(request.origin()), request.originAddress(),
+                createGeoPointFromDestination(request.destination()), request.destinationAddress(), request.destinationName(),
+                parseAndValidateExpectedArrival(request.expectedArrival()),
+                calculateTimerEnd(request.timerMinutes(), now), null, SafeWalkStatus.IN_PROGRESS
+                );
+
+        safeWalkSessionRepository.save(session);
+
+        createGuardians(session, request.guardianIds());
+        
+        fcmService.sendSafeWalkStartedNotification(session);
+        
+        return SessionCreateResponse.from(session);
+    }
+
+    @Transactional
+    public SessionEndResponse endSession(
+            final Long sessionId,
+            final Long userId,
+            final SessionEndRequest request
+    ) {
+        SafeWalkSession session = findSessionByIdOrThrow(sessionId);
+        final User user = userService.findByIdOrThrow(userId);
+        validateSessionOwnerAccess(session, user.getId());
+        validateSessionActive(session);
+
+        // TODO: 세션 종료 이유에 따른 추가 로직 구현(현재는 단순히 세션 종료)
+        session.endSession();
+        
+        fcmService.sendSafeWalkEndedNotification(session);
+
+        return SessionEndResponse.of(session);
+    }
+
+    @Transactional(readOnly = true)
+    public SessionDetailResponse getSession(
+            final Long userId,
+            final Long sessionId
+    ) {
+        final SafeWalkSession session = findSessionByIdOrThrow(sessionId);
+        validateSessionAccess(sessionId, userId);
+
+        final List<SafeWalkGuardian> guardians = safeWalkGuardianRepository.findBySessionId(sessionId);
+        return SessionDetailResponse.of(session, guardians);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<SessionStatusResponse> getCurrentStatus(Long userId) {
+        return safeWalkSessionRepository.findByWardIdAndSafeWalkStatus(userId, SafeWalkStatus.IN_PROGRESS)
+                .map(SessionStatusResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public SessionHistoryListResponse getSessionList(Long userId, String target) {
+        List<SafeWalkSession> sessions = switch (target) {
+            case "ward" -> getSessionsAsGuardian(userId);
+            case "me" -> getSessionsAsWard(userId);
+            default -> throw new SessionTargetException(target);
+        };
+        
+        List<SessionHistoryItem> sessionItems = sessions.stream()
+                .map(SessionHistoryItem::from)
+                .toList();
+                
+        return new SessionHistoryListResponse(sessionItems);
+    }
+
+    private List<SafeWalkSession> getSessionsAsGuardian(Long userId) {
+        List<Long> sessionIds = safeWalkGuardianRepository.findSessionIdByGuardianId(userId);
+        return safeWalkSessionRepository.findByIdIn(sessionIds);
+    }
+
+    private List<SafeWalkSession> getSessionsAsWard(Long userId) {
+        return safeWalkSessionRepository.findByWardId(userId);
+    }
+
+    private void validateNoActiveSession(User ward) {
+        safeWalkSessionRepository.findActiveSessionByWard(ward, SafeWalkStatus.IN_PROGRESS)
+                .ifPresent(session -> {
+                    log.info("해당 유저의 이미 진행중인 세션이 있습니다. 세션 ID: {}", session.getId());
+                    throw new ActiveSessionExistsException(session.getId());
+                });
+    }
+
+    private GeoPoint createGeoPointFromOrigin(final Origin origin) {
+        return GeoPoint.of(origin.lat(), origin.lon());
+    }
+
+    private GeoPoint createGeoPointFromDestination(final Destination destination) {
+        return GeoPoint.of(destination.lat(), destination.lon());
+    }
+
+    private LocalDateTime parseAndValidateExpectedArrival(final String expectedArrival) {
+        if (expectedArrival == null || expectedArrival.isEmpty()) {
+            return null;
+        }
+
+        LocalDateTime parsedTime;
+        try {
+            parsedTime = LocalDateTime.parse(expectedArrival);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("도착 예정 시간 형식이 올바르지 않습니다. ISO-8601 형식을 사용해주세요.");
+        }
+
+        if (parsedTime.isBefore(LocalDateTime.now())) {
+            throw new SessionArrivalTimePassedException("도착 예정 시간은 현재 시간보다 미래여야 합니다");
+        }
+
+        return parsedTime;
+    }
+
+    private LocalDateTime calculateTimerEnd(final Integer timerMinutes, final LocalDateTime now) {
+        if (timerMinutes == null || timerMinutes <= 0) {
+            return null;
+        }
+        return now.plusMinutes(timerMinutes);
+    }
+
+    private void createGuardians(final SafeWalkSession session, final List<Long> guardianIds) {
+        if (guardianIds == null || guardianIds.isEmpty()) {
+            log.info("보호자 리스트가 비어있습니다. 세션 ID: {}", session.getId());
+            return;
+        }
+
+        validateNoSelfGuardian(session.getWard().getId(), guardianIds);
+        
+        final List<Long> distinctGuardians = guardianIds.stream().distinct().toList();
+
+        final List<SafeWalkGuardian> safeWalkGuardianList = distinctGuardians.stream()
+                .map(this::findGuardianByIdOrThrow)
+                .map(guardian -> createGuardian(session, guardian))
+                .toList();
+
+        safeWalkGuardianRepository.saveAll(safeWalkGuardianList);
+        log.info("보호자 {}명을 세션에 추가했습니다. 세션 ID: {}", safeWalkGuardianList.size(), session.getId());
+    }
+    
+    private void validateNoSelfGuardian(final Long wardId, final List<Long> guardianIds) {
+        if (guardianIds.contains(wardId)) {
+            throw new SelfGuardianNotAllowedException(wardId);
+        }
+    }
+
+    private SafeWalkSession findSessionByIdOrThrow(final Long sessionId) {
+        return safeWalkSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new SessionNotFoundException(sessionId));
+    }
+
+    public static void validateSessionOwnerAccess(final SafeWalkSession session, final Long userId) {
+        if (!session.getWard().getId().equals(userId)) {
+            throw new SessionAccessDeniedException(session.getId(), userId);
+        }
+    }
+
+    private void validateSessionAccess(Long sessionId, Long userId) {
+        if (!safeWalkSessionRepository.existsByIdAndWardIdOrGuardianId(sessionId, userId)) {
+            throw new SessionAccessDeniedException(sessionId, userId);
+        }
+    }
+
+    public static void validateSessionActive(final SafeWalkSession session) {
+        if (!session.isActive()) {
+            throw new SessionNotActiveException(session.getId());
+        }
+    }
+
+    private User findGuardianByIdOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId, "해당 보호자를 찾을 수 없습니다. "));
+    }
+}
