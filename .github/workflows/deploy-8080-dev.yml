@@ -2,14 +2,14 @@ name: CI/CD (dev → 8080)
 
 on:
   push:
-    branches: [ "dev" ]      # dev에 푸시될 때 실행
-  workflow_dispatch: {}       # 수동 실행 버튼
+    branches: [ "dev" ]        # dev에 푸시될 때 실행
+  workflow_dispatch: {}         # 수동 실행 버튼
 
 permissions:
   contents: read
 
 concurrency:
-  group: deploy-8080          # 같은 브랜치 동시 배포 방지
+  group: deploy-8080            # 같은 브랜치 중복 배포 방지
   cancel-in-progress: true
 
 env:
@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 테스트 (필요 없으면 삭제하거나 || true 유지)
+      # (선택) 테스트. 필요 없으면 라인 통째로 지워도 됨.
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -51,7 +51,8 @@ jobs:
       - name: Deploy to 8080 (with Firebase secret)
         uses: appleboy/ssh-action@v1.2.0
         env:
-          FIREBASE_CREDENTIALS_B64: ${{ secrets.FIREBASE_CREDENTIALS_B64 }} # ← GitHub Secret(한 줄 base64)
+          # GitHub Secrets: 한 줄 base64 로 저장한 서비스키
+          FIREBASE_CREDENTIALS_B64: ${{ secrets.FIREBASE_CREDENTIALS_B64 }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -61,20 +62,27 @@ jobs:
           script: |
             set -e
 
+            # 디렉토리/ENV 파일 보장
+            sudo install -d -m 0750 /etc/safebell
+            sudo touch /etc/safebell.env
+            grep -q '^SPRING_PROFILES_ACTIVE=' /etc/safebell.env || echo 'SPRING_PROFILES_ACTIVE=prod' | sudo tee -a /etc/safebell.env >/dev/null
+            grep -q '^TZ=' /etc/safebell.env || echo 'TZ=Asia/Seoul' | sudo tee -a /etc/safebell.env >/dev/null
+
             # 0) Firebase 서비스키 복구(있을 때만)
             if [ -n "$FIREBASE_CREDENTIALS_B64" ]; then
-              sudo install -d -m 0750 /etc/safebell
               echo "$FIREBASE_CREDENTIALS_B64" | base64 -d | sudo tee /etc/safebell/firebase.json >/dev/null
               sudo chown root:root /etc/safebell/firebase.json
               sudo chmod 600 /etc/safebell/firebase.json
-              if ! grep -q '^GOOGLE_APPLICATION_CREDENTIALS=' /etc/safebell.env 2>/dev/null; then
-                echo 'GOOGLE_APPLICATION_CREDENTIALS=/etc/safebell/firebase.json' | sudo tee -a /etc/safebell.env >/dev/null
-              fi
+              # 앱이 참조할 경로: /app/safebell.json
+              grep -q '^GOOGLE_APPLICATION_CREDENTIALS=' /etc/safebell.env \
+                || echo 'GOOGLE_APPLICATION_CREDENTIALS=/app/safebell.json' | sudo tee -a /etc/safebell.env >/dev/null
             else
               echo "FIREBASE_CREDENTIALS_B64 not set. Skipping firebase.json restore."
+              # 앱이 환경변수만 보고 동작하도록 했으면 없어도 됩니다.
             fi
 
-            # 1) compose 파일(8080 단일 서비스, firebase.json 바인드) 보장
+            # 1) compose 파일(8080 단일 서비스, firebase.json → /app/safebell.json 바인드) 작성
+            sudo install -d -m 0755 /opt/apps/safebell
             sudo tee /opt/apps/safebell/docker-compose.yml > /dev/null <<'YML'
 services:
   safebell:
@@ -84,8 +92,9 @@ services:
     ports: ["8080:8080"]
     env_file: [/etc/safebell.env]
     volumes:
-      - /etc/safebell/firebase.json:/etc/safebell/firebase.json:ro
+      - /etc/safebell/firebase.json:/app/safebell.json:ro
 YML
+
             # 실제 이미지로 치환(:dev)
             sudo sed -i 's#image: REPLACED_BY_ACTION#image: ${{ env.IMAGE }}:dev#' /opt/apps/safebell/docker-compose.yml
 
