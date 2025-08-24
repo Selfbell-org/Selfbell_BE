@@ -12,4 +12,7 @@ public interface SafeWalkGuardianRepository extends JpaRepository<SafeWalkGuardi
 
     @Query("SELECT g.session.id FROM SafeWalkGuardian g WHERE g.guardian.id = :guardianId")
     List<Long> findSessionIdByGuardianId(@Param("guardianId") Long guardianId);
+
+    @Query("SELECT g.guardian.id FROM SafeWalkGuardian g WHERE g.session.id = :sessionId")
+    List<Long> findGuardianIdsBySessionId(@Param("sessionId") Long sessionId);
 }

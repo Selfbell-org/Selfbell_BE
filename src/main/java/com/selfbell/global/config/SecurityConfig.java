@@ -34,6 +34,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/test/fcm/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()  // WebSocket 연결 허용
                         .requestMatchers("/wss/**").permitAll() // WebSocket Secure 연결 허용
                         .requestMatchers("/actuator/**").permitAll()

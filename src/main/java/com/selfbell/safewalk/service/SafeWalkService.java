@@ -12,6 +12,7 @@ import com.selfbell.user.domain.User;
 import com.selfbell.user.exception.UserNotFoundException;
 import com.selfbell.user.repository.UserRepository;
 import com.selfbell.user.service.UserService;
+import com.selfbell.notification.service.FcmService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class SafeWalkService {
     private final UserRepository userRepository;
 
     private final UserService userService;
+    private final FcmService fcmService;
 
     @Transactional
     public SessionCreateResponse createSession(
@@ -55,7 +57,8 @@ public class SafeWalkService {
         safeWalkSessionRepository.save(session);
 
         createGuardians(session, request.guardianIds());
-        // TODO: 알림 서비스
+        
+        fcmService.sendSafeWalkStartedNotification(session);
         
         return SessionCreateResponse.from(session);
     }
@@ -73,7 +76,8 @@ public class SafeWalkService {
 
         // TODO: 세션 종료 이유에 따른 추가 로직 구현(현재는 단순히 세션 종료)
         session.endSession();
-        // TODO: 알림 서비스
+        
+        fcmService.sendSafeWalkEndedNotification(session);
 
         return SessionEndResponse.of(session);
     }
