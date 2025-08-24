@@ -78,7 +78,7 @@ sleep 3
 ### ====== 5) 로그 확인 ======
 cd ..
 c_green "5) 로그 tail (마지막 100줄)"
-tail -n 100 "${APP_LOG}"
+tail -f "${APP_LOG}"
 
 ### ====== 6) 포트 리스닝 확인 ======
 c_green "6) 포트 ${PORT} 리스닝 확인"
