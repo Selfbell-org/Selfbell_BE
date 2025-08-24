@@ -34,7 +34,6 @@ kill_pid() {
 ### ====== 1) Gradle 빌드 ======
 c_green "1) Gradle 빌드 시작"
 ./gradlew clean build -x test \
-  -Dspring.profiles.active="${SPRING_PROFILE}" \
   -Duser.language=ko -Duser.country=KR
 
 ### ====== 2) 기존 포트 프로세스 종료 ======
@@ -68,7 +67,11 @@ rm -f "../${APP_LOG}" "../${PID_FILE}"
 ### ====== 4) 백그라운드 실행 ======
 c_green "4) 애플리케이션 백그라운드 실행"
 SPRING_PROFILES_ACTIVE="${SPRING_PROFILE}" \
-nohup java -jar "${JAR_PATH}" > "../${APP_LOG}" 2>&1 &
+SERVER_PORT="${PORT}" \
+nohup java \
+  -Dspring.profiles.active="${SPRING_PROFILE}" \
+  -Dserver.port="${PORT}" \
+  -jar "${JAR_PATH}" > "../${APP_LOG}" 2>&1 &
 
 NEW_PID=$!
 echo "${NEW_PID}" > "../${PID_FILE}"
