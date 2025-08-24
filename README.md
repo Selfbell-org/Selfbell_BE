@@ -106,5 +106,4 @@ global
 	- exception
 ```
 
-#
 ### ⬇️ ERD
