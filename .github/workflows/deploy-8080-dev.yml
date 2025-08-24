@@ -48,21 +48,61 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to 8080
+      - name: Deploy to 8080 (with Firebase secret)
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          FIREBASE_CREDENTIALS_B64: ${{ secrets.FIREBASE_CREDENTIALS_B64 }} # ← GitHub Secret(한 줄 base64)
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
+          envs: FIREBASE_CREDENTIALS_B64
           script: |
             set -e
+
+            # 0) Firebase 서비스키 복구(있을 때만)
+            if [ -n "$FIREBASE_CREDENTIALS_B64" ]; then
+              sudo install -d -m 0750 /etc/safebell
+              echo "$FIREBASE_CREDENTIALS_B64" | base64 -d | sudo tee /etc/safebell/firebase.json >/dev/null
+              sudo chown root:root /etc/safebell/firebase.json
+              sudo chmod 600 /etc/safebell/firebase.json
+              if ! grep -q '^GOOGLE_APPLICATION_CREDENTIALS=' /etc/safebell.env 2>/dev/null; then
+                echo 'GOOGLE_APPLICATION_CREDENTIALS=/etc/safebell/firebase.json' | sudo tee -a /etc/safebell.env >/dev/null
+              fi
+            else
+              echo "FIREBASE_CREDENTIALS_B64 not set. Skipping firebase.json restore."
+            fi
+
+            # 1) compose 파일(8080 단일 서비스, firebase.json 바인드) 보장
+            sudo tee /opt/apps/safebell/docker-compose.yml > /dev/null <<'YML'
+services:
+  safebell:
+    image: REPLACED_BY_ACTION
+    container_name: safebell
+    restart: always
+    ports: ["8080:8080"]
+    env_file: [/etc/safebell.env]
+    volumes:
+      - /etc/safebell/firebase.json:/etc/safebell/firebase.json:ro
+YML
+            # 실제 이미지로 치환(:dev)
+            sudo sed -i 's#image: REPLACED_BY_ACTION#image: ${{ env.IMAGE }}:dev#' /opt/apps/safebell/docker-compose.yml
+
+            # 2) 배포
             cd /opt/apps/safebell
-            sudo sed -i 's#image: .*#image: ${{ env.IMAGE }}:dev#g' docker-compose.yml || true
             sudo docker compose pull
             sudo docker compose up -d
-            for i in {1..10}; do
-              curl -fsS http://localhost:8080/ && exit 0
-              sleep 2
+
+            # 3) 헬스체크(2xx/3xx/401/403/404 허용, 최대 ~90초 대기)
+            for i in {1..30}; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/ || true)
+              echo "try $i: code=$code"
+              case "$code" in
+                2*|3*|401|403|404) exit 0 ;;
+              esac
+              sleep 3
             done
+            echo "Healthcheck failed, printing logs:"
+            sudo docker logs --tail=200 safebell
             exit 1
