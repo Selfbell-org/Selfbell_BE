@@ -48,3 +48,12 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// 수정부분
+// 실행 JAR 파일명을 고정 (도커 COPY가 항상 이 파일만 집게)
+tasks.named("bootJar") {
+    archiveFileName = "app.jar"
+}
+
+// 혹시 plain.jar 생기는 경우를 확실히 차단 (선택이지만 권장)
+tasks.named("jar") { enabled = false }
