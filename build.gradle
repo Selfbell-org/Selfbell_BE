@@ -43,6 +43,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-cache' //지오코더 캐시 활용
     implementation 'com.github.ben-manes.caffeine:caffeine' //지오코더 캐시 활용
     implementation 'org.apache.httpcomponents.client5:httpclient5' //커넥션 풀 적용
+    implementation 'com.google.firebase:firebase-admin:9.2.0' //Firebase Admin SDK
 }
 
 tasks.named('test') {
