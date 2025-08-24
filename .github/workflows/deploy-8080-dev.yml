@@ -2,7 +2,7 @@ name: CI/CD (dev → 8080)
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "main" ]
   workflow_dispatch: {}
 
 permissions:
@@ -41,7 +41,7 @@ jobs:
           push: true
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
-            ${{ env.IMAGE }}:dev
+            ${{ env.IMAGE }}:latest
 
   deploy:
     needs: build-and-push
@@ -92,7 +92,7 @@ jobs:
             YML
 
             # 실제 이미지로 치환(:dev)
-            sudo sed -i 's#image: REPLACED_BY_ACTION#image: '"${{ env.IMAGE }}:dev"'#' /opt/apps/safebell/docker-compose.yml
+            sudo sed -i 's#image: REPLACED_BY_ACTION#image: '"${{ env.IMAGE }}:latest"'#' /opt/apps/safebell/docker-compose.yml
 
             # 3) 배포
             cd /opt/apps/safebell
