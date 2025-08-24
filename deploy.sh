@@ -3,7 +3,7 @@ set -euo pipefail
 
 ### ====== CONFIG ======
 APP_NAME="${APP_NAME:-selfbell}"
-PORT="${PORT:-8080}"
+PORT="${PORT:-8081}"
 SPRING_PROFILE="${SPRING_PROFILE:-prod}"
 LOG_DIR="${LOG_DIR:-logs}"
 APP_LOG="${APP_LOG:-${LOG_DIR}/app.log}"
