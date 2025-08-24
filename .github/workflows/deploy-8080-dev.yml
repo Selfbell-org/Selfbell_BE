@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 선택: 테스트 (필요 없으면 삭제하거나 || true 유지)
+      # 테스트 (필요 없으면 삭제하거나 || true 유지)
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
