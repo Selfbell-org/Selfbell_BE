@@ -35,7 +35,7 @@ api:
     key: ${API_VWORLD_KEY}
 
 firebase:
-  service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY}
+  service-account-key: safebell.json
 
 logging:
   level:
