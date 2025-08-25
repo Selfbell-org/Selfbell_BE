@@ -36,6 +36,7 @@ api:
 
 firebase:
   service-account-key: safebell.json
+  service-account-key-content: ${FIREBASE_SERVICE_ACCOUNT_JSON:}
 
 logging:
   level:
