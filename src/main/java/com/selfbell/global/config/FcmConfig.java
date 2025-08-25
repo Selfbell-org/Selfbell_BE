@@ -23,10 +23,16 @@ public class FcmConfig {
     public void initialize() {
         try {
             if (FirebaseApp.getApps().isEmpty()) {
+                if (firebaseConfigPath == null || firebaseConfigPath.trim().isEmpty()) {
+                    log.warn("Firebase 서비스 계정 키 환경변수가 설정되지 않았습니다. Firebase 알림이 비활성화됩니다.");
+                    return;
+                }
+                
                 ClassPathResource resource = new ClassPathResource(firebaseConfigPath);
                 
                 if (!resource.exists()) {
                     log.error("Firebase 서비스 계정 키 파일을 찾을 수 없습니다: {}", firebaseConfigPath);
+                    log.warn("Firebase 알림이 비활성화됩니다.");
                     return;
                 }
 
@@ -40,9 +46,12 @@ public class FcmConfig {
                     FirebaseApp.initializeApp(options);
                     log.info("Firebase Admin SDK 초기화 완료 (파일: {})", firebaseConfigPath);
                 }
+            } else {
+                log.info("Firebase Admin SDK가 이미 초기화되어 있습니다.");
             }
         } catch (IOException e) {
             log.error("Firebase Admin SDK 초기화 실패", e);
+            log.warn("Firebase 알림이 비활성화됩니다.");
         }
     }
 }

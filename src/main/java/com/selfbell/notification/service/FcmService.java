@@ -1,5 +1,6 @@
 package com.selfbell.notification.service;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.selfbell.device.domain.Device;
@@ -66,6 +67,11 @@ public class FcmService {
     private void sendNotificationToUser(Long userId, SafeWalkNotification notificationData) {
         try {
             log.info("개별 사용자 알림 전송 시도: userId={}", userId);
+            
+            if (FirebaseApp.getApps().isEmpty()) {
+                log.warn("Firebase가 초기화되지 않아 알림을 전송할 수 없습니다: userId={}", userId);
+                return;
+            }
             
             Device device = deviceRepository.findByUserId(userId)
                     .orElse(null);
