@@ -1,5 +1,6 @@
 package com.selfbell.sos.service;
 
+import com.selfbell.notification.service.FcmService;
 import com.selfbell.safewalk.domain.GeoPoint;
 import com.selfbell.sos.domain.SosMessage;
 import com.selfbell.sos.domain.SosRecipient;
@@ -11,13 +12,9 @@ import com.selfbell.sos.repository.SosRecipientRepository;
 import com.selfbell.user.domain.User;
 import com.selfbell.user.exception.UserNotFoundException;
 import com.selfbell.user.repository.UserRepository;
-import com.selfbell.notification.service.FcmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static com.selfbell.sos.domain.SosMessage.createSosMessage;
 import static com.selfbell.sos.domain.SosRecipient.createSosRecipient;
@@ -36,8 +33,12 @@ public class SosService {
 
         validateHasMessage(request.templateId(), request.message());
 
+        // Sender User 조회
+        User sender = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
         GeoPoint point = GeoPoint.of(request.lat(), request.lon());
-        SosMessage sosMessage = createSosMessage(userId, request.templateId(), request.message(), point);
+        SosMessage sosMessage = createSosMessage(sender, request.templateId(), request.message(), point);
 
         SosMessage savedSos = sosMessageRepository.save(sosMessage);
 

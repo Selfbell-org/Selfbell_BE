@@ -37,9 +37,9 @@ public class SosMessage extends BaseTimeEntity {
     })
     private GeoPoint point;
 
-    public static SosMessage createSosMessage(Long userId, Long templateId, String message, GeoPoint point) {
+    public static SosMessage createSosMessage(User sender, Long templateId, String message, GeoPoint point) {
         return SosMessage.builder()
-                .sender(User.builder().id(userId).build())
+                .sender(sender)
                 .templateId(templateId)
                 .message(message)
                 .point(point)
