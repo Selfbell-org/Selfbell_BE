@@ -11,6 +11,7 @@ import java.util.Map;
 public record SosNotification(
         String type,
         String sosMessageId,
+        String senderId,
         String senderName,
         String senderPhone,
         String message,
@@ -24,6 +25,7 @@ public record SosNotification(
         return SosNotification.builder()
                 .type(NotificationType.SOS_MESSAGE.getCode())
                 .sosMessageId(sosMessage.getId().toString())
+                .senderId(sosMessage.getSender().getId().toString())
                 .senderName(sosMessage.getSender().getName())
                 .senderPhone(sosMessage.getSender().getPhoneNumber())
                 .message(sosMessage.getMessage())
@@ -38,6 +40,7 @@ public record SosNotification(
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("type", type);
         dataMap.put("sosMessageId", sosMessageId);
+        dataMap.put("senderId", senderId);
         dataMap.put("senderName", senderName);
         dataMap.put("senderPhone", senderPhone);
         dataMap.put("message", message);
