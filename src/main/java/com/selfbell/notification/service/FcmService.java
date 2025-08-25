@@ -6,8 +6,10 @@ import com.google.firebase.messaging.Message;
 import com.selfbell.device.domain.Device;
 import com.selfbell.device.repository.DeviceRepository;
 import com.selfbell.notification.dto.SafeWalkNotification;
+import com.selfbell.notification.dto.SosNotification;
 import com.selfbell.safewalk.domain.SafeWalkSession;
 import com.selfbell.safewalk.repository.SafeWalkGuardianRepository;
+import com.selfbell.sos.domain.SosMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -64,6 +66,29 @@ public class FcmService {
         }
     }
 
+    public void sendSosNotification(SosMessage sosMessage, List<Long> receiverUserIds) {
+        try {
+            log.info("SOS 알림 전송 시작: sosMessageId={}", sosMessage.getId());
+            
+            SosNotification notificationData = SosNotification.createSosNotification(sosMessage);
+            
+            log.info("수신자 ID 목록: {}", receiverUserIds);
+            
+            if (receiverUserIds.isEmpty()) {
+                log.warn("수신자가 없어서 알림을 전송하지 않습니다: sosMessageId={}", sosMessage.getId());
+                return;
+            }
+            
+            for (Long receiverId : receiverUserIds) {
+                sendSosNotificationToUser(receiverId, notificationData);
+            }
+            
+            log.info("SOS 알림 전송 완료: sosMessageId={}, receiverCount={}", sosMessage.getId(), receiverUserIds.size());
+        } catch (Exception e) {
+            log.error("SOS 알림 전송 실패: sosMessageId={}", sosMessage.getId(), e);
+        }
+    }
+
     private void sendNotificationToUser(Long userId, SafeWalkNotification notificationData) {
         try {
             log.info("개별 사용자 알림 전송 시도: userId={}", userId);
@@ -95,6 +120,40 @@ public class FcmService {
             
         } catch (Exception e) {
             log.error("사용자 알림 전송 실패: userId={}, error={}", userId, e.getMessage(), e);
+        }
+    }
+
+    private void sendSosNotificationToUser(Long userId, SosNotification notificationData) {
+        try {
+            log.info("개별 SOS 알림 전송 시도: userId={}", userId);
+            
+            if (FirebaseApp.getApps().isEmpty()) {
+                log.warn("Firebase가 초기화되지 않아 SOS 알림을 전송할 수 없습니다: userId={}", userId);
+                return;
+            }
+            
+            Device device = deviceRepository.findByUserId(userId)
+                    .orElse(null);
+                    
+            if (device == null) {
+                log.warn("사용자 디바이스를 찾을 수 없습니다: userId={}", userId);
+                return;
+            }
+
+            log.info("디바이스 토큰 발견: userId={}, token={}...", userId, 
+                device.getDeviceToken().substring(0, Math.min(20, device.getDeviceToken().length())));
+
+            Message message = Message.builder()
+                    .setToken(device.getDeviceToken())
+                    .putAllData(notificationData.toDataMap())
+                    .build();
+
+            log.info("FCM SOS 메시지 전송 중: userId={}", userId);
+            String response = FirebaseMessaging.getInstance().send(message);
+            log.info("FCM SOS 알림 전송 성공: userId={}, type={}, response={}", userId, notificationData.type(), response);
+            
+        } catch (Exception e) {
+            log.error("사용자 SOS 알림 전송 실패: userId={}, error={}", userId, e.getMessage(), e);
         }
     }
 }

@@ -1,7 +1,9 @@
 package com.selfbell.sos.dto;
 
+import java.util.List;
+
 public record SosSendRequest(
-        Long[] receiverUserIds,
+        List<Long> receiverUserIds,
         Long templateId,
         String message,
         Double lat,

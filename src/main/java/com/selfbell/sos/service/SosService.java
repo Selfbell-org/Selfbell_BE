@@ -11,9 +11,13 @@ import com.selfbell.sos.repository.SosRecipientRepository;
 import com.selfbell.user.domain.User;
 import com.selfbell.user.exception.UserNotFoundException;
 import com.selfbell.user.repository.UserRepository;
+import com.selfbell.notification.service.FcmService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static com.selfbell.sos.domain.SosMessage.createSosMessage;
 import static com.selfbell.sos.domain.SosRecipient.createSosRecipient;
@@ -25,8 +29,8 @@ public class SosService {
 
     private final SosMessageRepository sosMessageRepository;
     private final SosRecipientRepository sosRecipientRepository;
-
     private final UserRepository userRepository;
+    private final FcmService fcmService;
 
     public SosSendResponse sendSos(Long userId, SosSendRequest request) {
 
@@ -47,7 +51,10 @@ public class SosService {
             sosRecipientRepository.save(sosRecipient);
         }
 
-        return SosSendResponse.from(savedSos, sentCount);
+        // FCM 알림 전송
+        fcmService.sendSosNotification(savedSos, request.receiverUserIds());
+
+        return SosSendResponse.from(savedSos, request.receiverUserIds().size());
     }
 
     private void validateHasMessage(Long templateId, String message) {
