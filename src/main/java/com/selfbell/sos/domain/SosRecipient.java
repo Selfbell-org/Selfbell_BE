@@ -29,4 +29,12 @@ public class SosRecipient extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private SosStatus status;
+
+    public static SosRecipient createSosRecipient(SosMessage sos, User recipient) {
+        return SosRecipient.builder()
+                .sos(sos)
+                .recipient(recipient)
+                .status(SosStatus.IN_PROGRESS)
+                .build();
+    }
 }

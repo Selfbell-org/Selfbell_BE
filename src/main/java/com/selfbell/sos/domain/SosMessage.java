@@ -36,4 +36,13 @@ public class SosMessage extends BaseTimeEntity {
             @AttributeOverride(name = "lon", column = @Column(name = "lon", precision = 10, scale = 7))
     })
     private GeoPoint point;
+
+    public static SosMessage createSosMessage(Long userId, Long templateId, String message, GeoPoint point) {
+        return SosMessage.builder()
+                .sender(User.builder().id(userId).build())
+                .templateId(templateId)
+                .message(message)
+                .point(point)
+                .build();
+    }
 }

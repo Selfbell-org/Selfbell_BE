@@ -36,7 +36,9 @@ public enum ErrorCode {
     SESSION_ACCESS_DENIED(HttpStatus.FORBIDDEN, "SESSION_ACCESS_DENIED", "세션에 대한 접근 권한이 없습니다."),
     INVALID_SESSION_TARGET(HttpStatus.BAD_REQUEST, "INVALID_SESSION_TARGET", "Target은 'me' 또는 'ward'만 허용됩니다."),
     SELF_GUARDIAN_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "SELF_GUARDIAN_NOT_ALLOWED", "자기 자신을 보호자로 등록할 수 없습니다."),
-    ;
+
+    // SOS 관련 예외 처리에 사용되는 ErrorCode
+    SOS_MESSAGE_EMPTY(HttpStatus.BAD_REQUEST, "SOS_MESSAGE_EMPTY","SOS 메시지가 비어 있습니다.");
 
     private final HttpStatus status;
     private final String code;
